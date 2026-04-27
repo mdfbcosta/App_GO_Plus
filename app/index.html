@@ -126,6 +126,17 @@
                         </div>
                     </div>
 
+                    <!-- Alerta: Missão no Próximo GO (Individual) -->
+                    <div id="home-alerta-escala-individual" class="card" style="display:none; border-left: 5px solid var(--primary-blue); background: #f0f7ff; margin-bottom: 20px;">
+                        <div class="flex gap-3 items-center">
+                            <span style="font-size: 1.5rem;">🔥</span>
+                            <div>
+                                <div style="font-size: 0.7rem; font-weight: 800; color: var(--primary-blue); text-transform: uppercase;">Missão no Próximo GO</div>
+                                <p id="home-escala-texto" style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark); margin: 3px 0;">Você está escalado para...</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Alerta: Assinatura Fraternal Pendente (Individual) -->
                     <div id="home-alerta-assinatura-individual" class="card" style="display:none; background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); border-left: 5px solid #22c55e; margin-bottom: 20px;">
                         <div class="flex items-start gap-3">
@@ -265,28 +276,35 @@
                 </div>
             </div> <!-- Fim View Eventos -->
 
-            <!-- View Escala -->
+            <!-- View Escala (Integrada com a Ata) -->
             <div id="view-escala" class="app-view" style="display:none;">
-                <div class="flex justify-between items-center" style="margin-bottom: 20px;">
-                    <h2 style="color: var(--primary-blue);">Escala do Próximo GO</h2>
+                <div style="margin-bottom: 25px;">
+                    <h2 style="color: var(--primary-blue);">Escala de Serviço do Próximo GO</h2>
+                    <p id="escala-data-texto" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700; margin-top: 5px;">Aguardando definição na ata de núcleo...</p>
                 </div>
                 
-                <div class="card" style="max-width: 600px;">
-                    <form id="form-escala" class="flex-col gap-4">
-                        <div>
-                            <label style="font-size:0.85rem; font-weight:500; color:var(--text-muted);">Pregador</label>
-                            <input type="text" id="escala-pregador" class="input-field" placeholder="Ex: Pe. João">
+                <div id="container-escala-visualizar" style="display:none;">
+                    <div class="card" style="padding: 20px; border-left: 5px solid var(--primary-blue); margin-bottom: 20px; background: #ffffff;">
+                        <div style="margin-bottom: 15px;">
+                            <label style="font-size: 0.7rem; font-weight: 800; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.5px;">🔥 Pregação</label>
+                            <div id="escala-ver-pregacao" style="font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin-top: 4px;">---</div>
                         </div>
-                        <div>
-                            <label style="font-size:0.85rem; font-weight:500; color:var(--text-muted);">Dirigente</label>
-                            <input type="text" id="escala-dirigente" class="input-field" placeholder="Ex: Maria Clara">
+                        <div style="margin-bottom: 15px;">
+                            <label style="font-size: 0.7rem; font-weight: 800; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.5px;">🛡️ Condução da Oração</label>
+                            <div id="escala-ver-conducao" style="font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin-top: 4px;">---</div>
                         </div>
-                        <div>
-                            <label style="font-size:0.85rem; font-weight:500; color:var(--text-muted);">Responsável pela Acolhida</label>
-                            <input type="text" id="escala-acolhida" class="input-field" placeholder="Ex: Ministério de Acolhida">
+                        <div style="margin-bottom: 5px;">
+                            <label style="font-size: 0.7rem; font-weight: 800; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.5px;">🤝 Acolhida</label>
+                            <div id="escala-ver-acolhida" style="font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin-top: 4px;">---</div>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="margin-top:10px;">Salvar Escala</button>
-                    </form>
+                    </div>
+
+                    <button class="btn btn-outline" style="width: 100%; color: #ef4444; border-color: #fee2e2; background: #fff1f2; font-weight: 700;" onclick="solicitarAlteracaoEscala()">🚩 Não poderei servir (Solicitar Alteração)</button>
+                </div>
+
+                <div id="container-escala-vazia" style="text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">📅</div>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">A escala será exibida aqui assim que for definida na próxima Ata de Núcleo.</p>
                 </div>
             </div> <!-- Fim View Escala -->
 
@@ -1226,6 +1244,7 @@
     <script src="app.js"></script>
     <script src="eventos.js"></script>
     <script src="ata.js"></script>
+    <script src="escala.js"></script>
     <script src="tesouraria.js"></script>
     <script src="pessoas.js"></script>
     <script src="resumo.js"></script>
