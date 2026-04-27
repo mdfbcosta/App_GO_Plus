@@ -93,28 +93,32 @@ function exibirBotaoPautaDinamico(ata) {
     const listArea = document.getElementById('lista-proximas-reunioes');
     if (!listArea) return;
     
-    // Ajuste de Data (Anti-Fuso Horário)
-    // Se a data vem como 2026-04-30T19:00, o split('T')[0] pega 2026-04-30
-    const partesData = ata.data_reuniao.split('T')[0].split('-');
-    const dataBr = `${partesData[2]}/${partesData[1]}`;
+    // MÉTODO BRUTO: Pegar os caracteres diretamente (YYYY-MM-DD...)
+    // Ex: "2026-04-30" -> dia 30, mes 04
+    const dataString = ata.data_reuniao.toString();
+    const ano = dataString.substring(0, 4);
+    const mes = dataString.substring(5, 7);
+    const dia = dataString.substring(8, 10);
+    const dataBr = `${dia}/${mes}`;
     
-    // Pega a hora
-    const hora = ata.data_reuniao.includes('T') ? ata.data_reuniao.split('T')[1].substring(0,5) : "--:--";
+    // Pega a hora (HH:mm)
+    const hora = dataString.includes('T') ? dataString.split('T')[1].substring(0, 5) : "--:--";
 
     const div = document.createElement('div');
-    div.className = 'card';
-    div.style.cssText = "padding: 10px; border: 2px solid #e2e8f0; margin-bottom: 15px; background: #f8fafc;";
+    div.style.cssText = "display: block; width: 100%; margin-bottom: 20px; position: relative; z-index: 1;";
     div.innerHTML = `
-        <button class="btn btn-primary flex justify-between items-center" style="width:100%; padding:15px; border-radius:8px;" onclick="window.pautaIdAtual='${ata.id}'; iniciarReuniaoAgora('${ata.id}');">
-            <div class="text-left">
-                <div style="font-size:0.9rem; font-weight:800;">Reunião em ${dataBr} às ${hora}</div>
-                <div style="font-size:0.6rem; opacity:0.8; text-transform:uppercase;">Clique para Iniciar a Ata →</div>
+        <div class="card" style="padding: 15px; border: 2px solid #e2e8f0; background: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 12px;">
+            <button class="btn btn-primary flex justify-between items-center" style="width:100%; padding:15px; border-radius:8px; margin-bottom: 10px;" onclick="window.pautaIdAtual='${ata.id}'; iniciarReuniaoAgora('${ata.id}');">
+                <div class="text-left">
+                    <div style="font-size:0.95rem; font-weight:800;">Reunião em ${dataBr} às ${hora}</div>
+                    <div style="font-size:0.65rem; opacity:0.9; text-transform:uppercase; font-weight:700;">▶️ Iniciar Chamada e Ata</div>
+                </div>
+                <span style="font-size:1.3rem;">📋</span>
+            </button>
+            <div class="flex gap-2">
+                <button class="btn btn-outline" style="flex:1; font-size: 0.75rem; background:#f8fafc; padding:10px; border-radius:8px; font-weight:700;" onclick="window.pautaIdAtual='${ata.id}'; editarPauta();">✏️ Editar</button>
+                <button class="btn btn-outline" style="color:#ef4444; border-color:#fee2e2; background:#fff1f2; flex:0.3; font-size: 0.8rem; padding:10px; border-radius:8px;" onclick="window.pautaIdAtual='${ata.id}'; cancelarPauta();">🗑️</button>
             </div>
-            <span style="font-size:1.2rem;">📝</span>
-        </button>
-        <div class="flex gap-2" style="margin-top: 10px;">
-            <button class="btn btn-outline" style="flex:1; font-size: 0.7rem; background:white; padding:8px;" onclick="window.pautaIdAtual='${ata.id}'; editarPauta();">✏️ Editar Planejamento</button>
-            <button class="btn btn-outline" style="color:#ef4444; flex:0.4; font-size: 0.7rem; background:white; padding:8px;" onclick="window.pautaIdAtual='${ata.id}'; cancelarPauta();">🗑️</button>
         </div>
     `;
     listArea.appendChild(div);
