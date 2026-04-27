@@ -93,16 +93,18 @@ function exibirBotaoPautaDinamico(ata) {
     const listArea = document.getElementById('lista-proximas-reunioes');
     if (!listArea) return;
     
-    // SOLUÇÃO DEFINITIVA DE DATA: Forçar Fuso Horário de Brasília
-    // Criamos o objeto de data e forçamos a interpretação como horário de Brasília
-    const dataObj = new Date(ata.data_reuniao);
+    // SOLUÇÃO DEFINITIVA: Pegar dia e mês diretamente do texto (AAAA-MM-DD)
+    const pura = ata.data_reuniao.substring(0, 10);
+    const [ano, mes, dia] = pura.split('-');
+    const dataBr = `${dia}/${mes}`;
     
-    // Opções para formatar no fuso do Brasil
-    const opcoes = { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit' };
-    const dataBr = dataObj.toLocaleDateString('pt-BR', opcoes);
-    
-    const opcoesHora = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' };
-    const hora = dataObj.toLocaleTimeString('pt-BR', opcoesHora);
+    // Pega a hora se houver (HH:mm)
+    let hora = "--:--";
+    if (ata.data_reuniao.includes('T')) {
+        hora = ata.data_reuniao.split('T')[1].substring(0, 5);
+    } else if (ata.data_reuniao.includes(' ')) {
+        hora = ata.data_reuniao.split(' ')[1].substring(0, 5);
+    }
 
     const div = document.createElement('div');
     // Estilo ultra-reforçado para evitar sobreposição

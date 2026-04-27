@@ -506,7 +506,13 @@ window.verificarPautasHome = async function() {
         if (pauta) {
             console.log("DEBUG: Pauta encontrada para Home!", pauta);
             const dados = JSON.parse(pauta.resumo_pregacao);
-            const dataAt = new Date(pauta.data_reuniao).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+            
+            // Formatação Anti-Fuso (Texto Puro)
+            const pura = pauta.data_reuniao.substring(0, 10);
+            const [ano, mes, dia] = pura.split('-');
+            const hora = pauta.data_reuniao.includes('T') ? pauta.data_reuniao.split('T')[1].substring(0, 5) : "--:--";
+            const dataAt = `${dia}/${mes} às ${hora}`;
+            
             const topico = (dados.pautas || "Assuntos gerais").split('\n')[0];
             resumoText.innerText = `Próxima Reunião: ${dataAt} • Tópico: ${topico}...`;
             alertaBox.style.display = 'block';
