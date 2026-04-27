@@ -302,21 +302,11 @@
                     <button class="btn btn-primary" id="btn-nova-pauta" onclick="abrirModalPauta()" style="width: 100%; padding: 12px; font-weight: 700;">+ Reunião</button>
                 </div>
 
-                <!-- 3. Botão Próxima Reunião (Dinâmico) -->
-                <div id="container-btn-proxima-reuniao" style="display:none; margin-bottom: 25px; border: 2px solid var(--primary-blue); border-radius: 12px; padding: 10px; background: #f0f7ff;">
-                    <button class="btn btn-primary" style="width:100%; background: var(--primary-blue); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;" onclick="iniciarReuniaoAgora()">
-                        <div class="flex items-center gap-3">
-                            <span style="font-size: 1.2rem;">📅</span>
-                            <div style="text-align: left;">
-                                <div style="font-size: 0.6rem; opacity: 0.8; text-transform: uppercase;">Próxima Reunião</div>
-                                <div id="btn-pauta-data" style="font-size: 0.9rem; font-weight: 700;">-</div>
-                            </div>
-                        </div>
-                        <span style="font-size: 0.7rem;">Abrir Chamada e Ata →</span>
-                    </button>
-                    <div class="flex gap-2" style="margin-top: 10px;">
-                        <button class="btn btn-outline" style="flex:1; font-size: 0.7rem; background:white;" onclick="editarPauta()">✏️ Editar</button>
-                        <button class="btn btn-outline" style="color:red; font-size: 0.7rem; background:white;" onclick="cancelarPauta()">🗑️ Cancelar</button>
+                <!-- 3. Próximas Reuniões (Lista Dinâmica) -->
+                <div id="container-btn-proxima-reuniao" style="display:none; margin-bottom: 25px;">
+                    <h3 style="color: var(--primary-blue); font-size: 0.8rem; margin-bottom: 12px; font-weight: 800; text-transform: uppercase;">📅 Próximos Planejamentos</h3>
+                    <div id="lista-proximas-reunioes" class="flex-col gap-3">
+                        <!-- Botões das pautas entrarão aqui via JS -->
                     </div>
                 </div>
 

@@ -51,7 +51,12 @@ async function carregarAtas() {
         
         if (lista) lista.innerHTML = '';
         if (listaPendentes) listaPendentes.innerHTML = '';
-        if (containerBtn) containerBtn.style.display = 'none';
+        if (containerBtn) {
+            containerBtn.style.display = 'none';
+            // Limpa botões antigos se houver um container de lista dentro dele
+            const listArea = document.getElementById('lista-proximas-reunioes');
+            if (listArea) listArea.innerHTML = '';
+        }
         if (containerPendentes) containerPendentes.style.display = 'none';
         pautaIdAtual = null;
 
@@ -62,17 +67,12 @@ async function carregarAtas() {
             try { dados = JSON.parse(ata.resumo_pregacao || '{}'); } catch(e) { dados = { desenvolvimento: ata.resumo_pregacao, status: 'finalizada' }; }
 
             if (dados.status === 'pauta') {
-                pautaIdAtual = ata.id;
                 if (containerBtn) {
                     containerBtn.style.display = 'block';
-                    const dataObj = new Date(ata.data_reuniao);
-                    const dia = String(dataObj.getDate()).padStart(2, '0');
-                    const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
-                    const horas = String(dataObj.getHours()).padStart(2, '0');
-                    const mins = String(dataObj.getMinutes()).padStart(2, '0');
-                    if (btnDataText) btnDataText.innerText = `${dia}/${mes} às ${horas}:${mins}`;
+                    exibirBotaoPautaDinamico(ata);
                 }
             } else {
+                // ... resto da lógica de pendentes e histórico (não muda)
                 const nPresentes = (dados.presentes || []).length;
                 const nAssinaturas = Object.keys(dados.assinaturas || {}).length;
                 const dataFinal = new Date(dados.data_finalizacao || ata.data_reuniao);
@@ -87,6 +87,37 @@ async function carregarAtas() {
             }
         });
     } catch (err) { console.error(err); }
+}
+
+function exibirBotaoPautaDinamico(ata) {
+    const listArea = document.getElementById('lista-proximas-reunioes');
+    if (!listArea) return;
+    
+    // Ajuste de Data (Anti-Fuso Horário)
+    // Se a data vem como 2026-04-30T19:00, o split('T')[0] pega 2026-04-30
+    const partesData = ata.data_reuniao.split('T')[0].split('-');
+    const dataBr = `${partesData[2]}/${partesData[1]}`;
+    
+    // Pega a hora
+    const hora = ata.data_reuniao.includes('T') ? ata.data_reuniao.split('T')[1].substring(0,5) : "--:--";
+
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.cssText = "padding: 10px; border: 2px solid #e2e8f0; margin-bottom: 15px; background: #f8fafc;";
+    div.innerHTML = `
+        <button class="btn btn-primary flex justify-between items-center" style="width:100%; padding:15px; border-radius:8px;" onclick="window.pautaIdAtual='${ata.id}'; iniciarReuniaoAgora('${ata.id}');">
+            <div class="text-left">
+                <div style="font-size:0.9rem; font-weight:800;">Reunião em ${dataBr} às ${hora}</div>
+                <div style="font-size:0.6rem; opacity:0.8; text-transform:uppercase;">Clique para Iniciar a Ata →</div>
+            </div>
+            <span style="font-size:1.2rem;">📝</span>
+        </button>
+        <div class="flex gap-2" style="margin-top: 10px;">
+            <button class="btn btn-outline" style="flex:1; font-size: 0.7rem; background:white; padding:8px;" onclick="window.pautaIdAtual='${ata.id}'; editarPauta();">✏️ Editar Planejamento</button>
+            <button class="btn btn-outline" style="color:#ef4444; flex:0.4; font-size: 0.7rem; background:white; padding:8px;" onclick="window.pautaIdAtual='${ata.id}'; cancelarPauta();">🗑️</button>
+        </div>
+    `;
+    listArea.appendChild(div);
 }
 
 function exibirAtaPendente(ata, dados) {
