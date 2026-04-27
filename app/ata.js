@@ -399,14 +399,22 @@ window.toggleAccordionAta = (id) => {
 };
 
 window.cancelarPauta = async function() {
-    if (!pautaIdAtual) return;
-    if (confirm("Excluir este planejamento?")) {
+    if (!pautaIdAtual) return alert("Nenhuma pauta selecionada.");
+    if (confirm("Tem certeza que deseja excluir este planejamento?")) {
         try {
-            await supabaseClient.from('reunioes').delete().eq('id', pautaIdAtual);
+            const { error } = await supabaseClient.from('reunioes').delete().eq('id', pautaIdAtual);
+            if (error) throw error;
+            
             pautaIdAtual = null;
+            alert("Planejamento excluído com sucesso! 🙏");
+            fecharModalPauta();
             carregarAtas();
+            
             if (typeof window.verificarPautasHome === 'function') window.verificarPautasHome();
-        } catch(e) { console.error(e); }
+        } catch(e) { 
+            console.error(e);
+            alert("Erro ao excluir: " + e.message);
+        }
     }
 };
 
