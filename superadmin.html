@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperAdmin - Matriz de Permissões | GO+</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .admin-table th, .admin-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .admin-table th {
+            background-color: var(--primary-blue);
+            color: white;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        .admin-table tr:last-child td { border-bottom: none; }
+        .admin-table tbody tr:hover { background-color: var(--bg-light); }
+        .perm-select {
+            padding: 5px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background: white;
+            font-size: 0.85rem;
+            width: 100%;
+        }
+        .perm-select.executar { border-color: #16a34a; background-color: #f0fdf4; color: #16a34a; font-weight: 600; }
+        .perm-select.visualizar { border-color: #ca8a04; background-color: #fefce8; color: #ca8a04; font-weight: 600; }
+        .perm-select.nenhum { border-color: #dc2626; background-color: #fef2f2; color: #dc2626; font-weight: 600; }
+    </style>
+</head>
+<body style="background-color: var(--bg-light); min-height: 100vh; padding: 20px;">
+
+    <!-- Login SuperAdmin -->
+    <div id="admin-login-view" style="display: flex; justify-content: center; align-items: center; min-height: 80vh;">
+        <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
+            <h1 style="color: var(--primary-blue); margin-bottom: 5px;">Acesso Nacional</h1>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Restrito à equipe gestora da Plataforma GO+</p>
+            
+            <form id="admin-login-form" class="flex-col gap-4">
+                <input type="email" id="admin-email" class="input-field" placeholder="E-mail SuperAdmin" required>
+                <input type="password" id="admin-senha" class="input-field" placeholder="Senha" required>
+                <button type="submit" id="btn-admin-login" class="btn btn-primary" style="width: 100%;">Acessar Matriz</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Painel SuperAdmin -->
+    <div id="admin-dashboard-view" style="display: none; max-width: 1200px; margin: 0 auto;">
+        <div class="flex justify-between items-center" style="margin-bottom: 20px; background: white; padding: 20px; border-radius: var(--radius-md); box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div>
+                <h1 style="color: var(--primary-blue); font-size: 1.5rem;">Controle Global de Acesso (RBAC)</h1>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Defina o que cada cargo pode fazer. As regras aqui afetam TODOS os Grupos de Oração do Brasil.</p>
+            </div>
+            <div class="flex gap-2">
+                <button class="btn btn-primary" onclick="salvarTodasPermissoes()">💾 Salvar Regras</button>
+                <button class="btn btn-outline" onclick="fazerLogout()">Sair</button>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th style="min-width: 150px;">Cargo na RCC</th>
+                        <th>👥 Pessoas</th>
+                        <th>📋 Ata</th>
+                        <th>⚙️ Configurações</th>
+                        <th>📊 Métricas</th>
+                        <th>🙏 Pedidos</th>
+                        <th>📅 Eventos</th>
+                        <th>🔥 Partilhas</th>
+                        <th>📖 Resumo GO</th>
+                        <th>📝 Escala</th>
+                        <th>💰 Tesouraria</th>
+                    </tr>
+                </thead>
+                <tbody id="matriz-body">
+                    <tr><td colspan="11" style="text-align: center;">Carregando Matriz...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <p style="margin-top: 20px; font-size: 0.8rem; color: var(--text-muted);">
+            * O sistema atualizará automaticamente a interface de todos os membros de acordo com as seleções acima no momento do login.
+        </p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="superadmin.js"></script>
+</body>
+</html>
