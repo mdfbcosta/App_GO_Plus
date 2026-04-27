@@ -3,6 +3,9 @@
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log("🚀 Vercel Auto-deploy: ATIVO!");
+    console.log("🕊️ Unidade e Tecnologia a serviço da RCC.");
+
     // 1. VERIFICAR AUTENTICAÇÃO
     if (!supabaseClient) {
         alert("Erro crítico: Banco de dados não conectado.");
