@@ -3,7 +3,7 @@
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("🚀 Vercel Auto-deploy: ATIVO!");
+    console.log("🚀 GO+ Versão: 2.0 (Deploy Vercel OK)");
     console.log("🕊️ Unidade e Tecnologia a serviço da RCC.");
 
     // 1. VERIFICAR AUTENTICAÇÃO
@@ -813,7 +813,7 @@ window.alternarView = function(viewId) {
             if (viewId === 'view-escala') headerTitle.innerText = 'Escala do GO';
             if (viewId === 'view-resumo-go') headerTitle.innerText = 'Resumo do GO (Público)';
             if (viewId === 'view-tesouraria') headerTitle.innerText = 'Tesouraria';
-            if (viewId === 'view-ata') headerTitle.innerText = 'Ata da Reunião de Núcleo';
+            if (viewId === 'view-ata') headerTitle.innerText = 'Gestão das Reuniões de Núcleo';
             if (viewId === 'view-pessoas') headerTitle.innerText = 'Membros do GO';
             if (viewId === 'view-partilhas') headerTitle.innerText = 'Mural de Partilhas';
             if (viewId === 'view-pedidos') headerTitle.innerText = 'Pedidos de Oração';
