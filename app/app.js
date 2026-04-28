@@ -511,7 +511,7 @@ window.verificarPautasHome = async function() {
             const pura = pauta.data_reuniao.substring(0, 10);
             const [ano, mes, dia] = pura.split('-');
             
-            let hora = "--:--";
+            let hora = "00:00";
             if (pauta.data_reuniao.includes('T')) {
                 hora = pauta.data_reuniao.split('T')[1].substring(0, 5);
             } else if (pauta.data_reuniao.includes(' ')) {

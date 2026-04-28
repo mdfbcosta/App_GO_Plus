@@ -99,7 +99,7 @@ function exibirBotaoPautaDinamico(ata) {
     const dataBr = `${dia}/${mes}`;
     
     // Pega a hora se houver (HH:mm)
-    let hora = "--:--";
+    let hora = "00:00";
     if (ata.data_reuniao.includes('T')) {
         hora = ata.data_reuniao.split('T')[1].substring(0, 5);
     } else if (ata.data_reuniao.includes(' ')) {
@@ -194,17 +194,21 @@ window.editarPauta = async function() {
         const { data: ata } = await supabaseClient.from('reunioes').select('*').eq('id', window.pautaIdAtual).single();
         let dados = JSON.parse(ata.resumo_pregacao);
         
-        // CORREÇÃO ANTI-FUSO PARA INPUT DATETIME-LOCAL
-        let dataStr = ata.data_reuniao;
+        // CORREÇÃO ROBUSTA ANTI-FUSO
+        let dataStr = ata.data_reuniao || "";
         if (dataStr.includes(' ')) dataStr = dataStr.replace(' ', 'T');
-        const finalData = dataStr.substring(0, 16); // AAAA-MM-DDTHH:mm
+        
+        // Se a data vier sem hora (apenas 10 caracteres), adiciona T00:00
+        if (dataStr.length === 10) dataStr += "T00:00";
+        
+        const finalData = dataStr.substring(0, 16); // Garante formato AAAA-MM-DDTHH:mm
         
         document.getElementById('pauta-data').value = finalData;
         document.getElementById('pauta-local').value = dados.local || "";
         document.getElementById('pauta-topicos').value = dados.pautas || "";
         document.getElementById('modal-pauta-titulo').innerText = "Editar Planejamento";
         document.getElementById('modal-pauta').style.display = 'flex';
-    } catch(e) { console.error(e); }
+    } catch(e) { console.error("Erro ao editar pauta:", e); }
 };
 
 window.salvarPauta = async function() {
