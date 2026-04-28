@@ -98,14 +98,10 @@ function exibirBotaoPautaDinamico(ata) {
     const [ano, mes, dia] = pura.split('-');
     const dataBr = `${dia}/${mes}`;
     
-    // Pega a hora se houver (HH:mm)
+    // Pega a hora de forma robusta via Regex
     let hora = "00:00";
-    if (ata.data_reuniao.includes('T')) {
-        hora = ata.data_reuniao.split('T')[1].substring(0, 5);
-    } else if (ata.data_reuniao.includes(' ')) {
-        const partes = ata.data_reuniao.split(' ');
-        if (partes[1]) hora = partes[1].substring(0, 5);
-    }
+    const matchHora = ata.data_reuniao.match(/(\d{2}:\d{2})/);
+    if (matchHora) hora = matchHora[1];
 
     const div = document.createElement('div');
     // Estilo ultra-reforçado para evitar sobreposição

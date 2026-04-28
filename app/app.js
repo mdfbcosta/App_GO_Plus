@@ -512,12 +512,8 @@ window.verificarPautasHome = async function() {
             const [ano, mes, dia] = pura.split('-');
             
             let hora = "00:00";
-            if (pauta.data_reuniao.includes('T')) {
-                hora = pauta.data_reuniao.split('T')[1].substring(0, 5);
-            } else if (pauta.data_reuniao.includes(' ')) {
-                const partes = pauta.data_reuniao.split(' ');
-                if (partes[1]) hora = partes[1].substring(0, 5);
-            }
+            const matchHora = pauta.data_reuniao.match(/(\d{2}:\d{2})/);
+            if (matchHora) hora = matchHora[1];
             
             const dataAt = `${dia}/${mes} às ${hora}`;
             
