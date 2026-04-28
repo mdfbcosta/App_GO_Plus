@@ -111,7 +111,7 @@ function exibirBotaoPautaDinamico(ata) {
     div.style.cssText = "display: block !important; width: 100% !important; margin-bottom: 25px !important; position: relative !important; clear: both !important; float: none !important;";
     div.innerHTML = `
         <div style="padding: 15px; border: 2px solid #3b82f6; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <button class="btn btn-primary flex justify-between items-center" style="width:100%; padding:15px; border-radius:8px; margin-bottom: 12px;" onclick="window.pautaIdAtual='${ata.id}'; iniciarReuniaoAgora('${ata.id}');">
+            <button class="btn btn-primary flex justify-between items-center" style="width:100%; padding:15px; border-radius:8px; margin-bottom: 12px;" onclick="window.pautaIdAtual='${ata.id}'; window.iniciarReuniaoAgora('${ata.id}');">
                 <div class="text-left">
                     <div style="font-size:1rem; font-weight:800;">Reunião: ${dataBr} às ${hora}</div>
                     <div style="font-size:0.65rem; opacity:0.9; text-transform:uppercase; font-weight:700;">▶️ Iniciar Reunião de Núcleo</div>
@@ -119,8 +119,8 @@ function exibirBotaoPautaDinamico(ata) {
                 <span style="font-size:1.5rem;">📝</span>
             </button>
             <div class="flex gap-2">
-                <button class="btn btn-outline" style="flex:1; font-size: 0.75rem; background:#f0f7ff; padding:10px; border-radius:8px; font-weight:700; border: 1px solid #3b82f6;" onclick="window.pautaIdAtual='${ata.id}'; editarPauta();">✏️ Editar</button>
-                <button class="btn btn-outline" style="color:#ef4444; border-color:#fee2e2; background:#fff1f2; flex:0.3; font-size: 0.8rem; padding:10px; border-radius:8px;" onclick="window.pautaIdAtual='${ata.id}'; cancelarPauta();">🗑️</button>
+                <button class="btn btn-outline" style="flex:1; font-size: 0.75rem; background:#f0f7ff; padding:10px; border-radius:8px; font-weight:700; border: 1px solid #3b82f6;" onclick="window.pautaIdAtual='${ata.id}'; window.editarPauta();">✏️ Editar</button>
+                <button class="btn btn-outline" style="color:#ef4444; border-color:#fee2e2; background:#fff1f2; flex:0.3; font-size: 0.8rem; padding:10px; border-radius:8px;" onclick="window.pautaIdAtual='${ata.id}'; window.cancelarPauta();">🗑️</button>
             </div>
         </div>
     `;
@@ -188,13 +188,14 @@ window.abrirModalPauta = function() {
 };
 
 window.editarPauta = async function() {
-    if (!pautaIdAtual) return;
+    if (!window.pautaIdAtual) return;
     try {
-        const { data: ata } = await supabaseClient.from('reunioes').select('*').eq('id', pautaIdAtual).single();
+        const { data: ata } = await supabaseClient.from('reunioes').select('*').eq('id', window.pautaIdAtual).single();
         let dados = JSON.parse(ata.resumo_pregacao);
         const d = new Date(ata.data_reuniao);
         const iso = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().substring(0, 16);
         document.getElementById('pauta-data').value = iso;
+        document.getElementById('pauta-local').value = dados.local || "";
         document.getElementById('pauta-topicos').value = dados.pautas || "";
         document.getElementById('modal-pauta-titulo').innerText = "Editar Planejamento";
         document.getElementById('modal-pauta').style.display = 'flex';
@@ -221,8 +222,11 @@ window.salvarPauta = async function() {
     };
 
     try {
-        if (pautaIdAtual) {
-            await supabaseClient.from('reunioes').update({ data_reuniao: dataVal, resumo_pregacao: JSON.stringify(dados) }).eq('id', pautaIdAtual);
+        const localVal = document.getElementById('pauta-local').value;
+        dados.local = localVal;
+
+        if (window.pautaIdAtual) {
+            await supabaseClient.from('reunioes').update({ data_reuniao: dataVal, resumo_pregacao: JSON.stringify(dados) }).eq('id', window.pautaIdAtual);
         } else {
             await supabaseClient.from('reunioes').insert([{ grupo_id: window.meuGrupoId, tipo: 'Núcleo', data_reuniao: dataVal, resumo_pregacao: JSON.stringify(dados) }]);
         }

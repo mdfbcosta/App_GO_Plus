@@ -64,7 +64,7 @@ async function carregarPerfil() {
         }
         
         const baseUrl = origin + root;
-        const linkInd = `${baseUrl}/register.html?go_id=${membro.grupo_id}&indicado_por=${membro.id}`;
+        const linkInd = `${baseUrl}/index.html?go_id=${membro.grupo_id}&indicado_por=${membro.id}`;
         
         const elLink = document.getElementById('perfil-link-indicacao');
         if (elLink) elLink.innerText = linkInd;
