@@ -133,13 +133,17 @@ function exibirBotaoPautaDinamico(ata) {
             </button>`;
     }
 
+    const podeGerenciar = (window.meuCargo === 'Coordenador' || window.meuCargo === 'Secretário');
+    
     div.innerHTML = `
         <div style="padding: 15px; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             ${btnHtml}
+            ${podeGerenciar ? `
             <div class="flex gap-2">
                 <button class="btn btn-outline" style="flex:1; font-size: 0.75rem; background:#f0f7ff; padding:10px; border-radius:8px; font-weight:700; border: 1px solid #3b82f6;" onclick="window.pautaIdAtual='${ata.id}'; window.editarPauta();">✏️ Editar Pauta</button>
                 <button class="btn btn-outline" style="color:#ef4444; border-color:#fee2e2; background:#fff1f2; flex:0.3; font-size: 0.8rem; padding:10px; border-radius:8px;" onclick="window.pautaIdAtual='${ata.id}'; window.cancelarPauta();">🗑️</button>
             </div>
+            ` : ''}
         </div>
     `;
     listArea.appendChild(div);
@@ -178,7 +182,10 @@ function exibirAtaPendente(ata, dados) {
         </p>
         <div class="flex gap-2">
             <button class="btn btn-outline" style="flex:1; font-size: 0.7rem;" onclick="visualizarAtaCompleta('${ata.id}')">🔍 Ler Documento</button>
-            ${(window.meuCargo !== 'Participante') ? `<button class="btn btn-primary" style="flex:1; font-size:0.7rem;" onclick="iniciarReuniaoAgora('${ata.id}')">✏️ Editar</button>` : ''}
+            ${(window.meuCargo === 'Coordenador' || window.meuCargo === 'Secretário') ? `
+                <button class="btn btn-primary" style="flex:1; font-size:0.7rem;" onclick="iniciarReuniaoAgora('${ata.id}')">✏️ Editar</button>
+                <button class="btn btn-outline" style="padding:5px 12px; color:#ef4444; border-color:#fee2e2;" onclick="window.pautaIdAtual='${ata.id}'; window.cancelarPauta();">🗑️</button>
+            ` : ''}
         </div>
     `;
     lista.appendChild(div);
