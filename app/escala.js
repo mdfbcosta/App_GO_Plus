@@ -48,9 +48,9 @@ window.verificarMinhaEscalaHome = async function() {
             const meuNomeCurto = window.meuNome.toLowerCase();
             
             let missao = "";
-            if (escala.pregacao && escala.pregacao.toLowerCase().includes(meuNomeCurto)) missao = "🔥 Pregação";
-            else if (escala.conducao && escala.conducao.toLowerCase().includes(meuNomeCurto)) missao = "🛡️ Condução da Oração";
-            else if (escala.acolhida && escala.acolhida.toLowerCase().includes(meuNomeCurto)) missao = "🤝 Acolhida";
+            if (escala.pregacao === window.meuNome) missao = "🔥 Pregação";
+            else if (escala.conducao === window.meuNome) missao = "🛡️ Condução da Oração";
+            else if (escala.acolhida === window.meuNome) missao = "🤝 Acolhida";
 
             if (missao) {
                 // Formatação da Data (Anti-Fuso)

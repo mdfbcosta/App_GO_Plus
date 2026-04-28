@@ -474,6 +474,11 @@ async function carregarDashboard() {
         // 8. Verificar Minhas Assinaturas Fraternais (Novo)
         await window.verificarMinhasAssinaturasHome();
 
+        // 9. Verificar Minha Escala no Próximo GO (Novo)
+        if (typeof window.verificarMinhaEscalaHome === 'function') {
+            await window.verificarMinhaEscalaHome();
+        }
+
     } catch (err) {
         console.error("Erro ao carregar dashboard:", err);
     }

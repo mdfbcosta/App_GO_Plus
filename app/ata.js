@@ -275,10 +275,25 @@ window.iniciarReuniaoAgora = async function(idAtaManual = null) {
         document.getElementById('ata-avaliacao-go').value = dados.avaliacao_go || "";
         document.getElementById('ata-informativos-decisões').value = dados.informativos || "";
 
-        // Novos campos de Escala
-        document.getElementById('ata-escala-pregacao').value = dados.escala?.pregacao || "";
-        document.getElementById('ata-escala-conducao').value = dados.escala?.conducao || "";
-        document.getElementById('ata-escala-acolhida').value = dados.escala?.acolhida || "";
+        // Novos campos de Escala (Popular selects)
+        const selectsEscala = ['ata-escala-pregacao', 'ata-escala-conducao', 'ata-escala-acolhida'];
+        const { data: todosMembros } = await supabaseClient.from('membros').select('id, nome').eq('grupo_id', window.meuGrupoId).order('nome');
+        
+        selectsEscala.forEach(sid => {
+            const el = document.getElementById(sid);
+            if (el) {
+                el.innerHTML = '<option value="">Selecione um servo...</option>';
+                if (todosMembros) {
+                    todosMembros.forEach(m => {
+                        el.innerHTML += `<option value="${m.nome}">${m.nome}</option>`;
+                    });
+                }
+                // Define o valor salvo
+                if (sid === 'ata-escala-pregacao') el.value = dados.escala?.pregacao || "";
+                if (sid === 'ata-escala-conducao') el.value = dados.escala?.conducao || "";
+                if (sid === 'ata-escala-acolhida') el.value = dados.escala?.acolhida || "";
+            }
+        });
 
         const containerRevisao = document.getElementById('container-solicitacoes-revisao');
         const listaRevisao = document.getElementById('lista-solicitacoes-revisao');
