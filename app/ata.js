@@ -441,20 +441,29 @@ window.toggleAccordionAta = (id) => {
 };
 
 window.cancelarPauta = async function() {
-    if (!pautaIdAtual) return alert("Nenhuma pauta selecionada.");
-    if (confirm("Tem certeza que deseja excluir este planejamento?")) {
+    if (!window.pautaIdAtual) {
+        console.error("Tentativa de excluir sem ID.");
+        return alert("Erro: ID da reunião não encontrado.");
+    }
+    
+    if (confirm("Deseja realmente excluir este planejamento?")) {
         try {
-            const { error } = await supabaseClient.from('reunioes').delete().eq('id', pautaIdAtual);
-            if (error) throw error;
+            console.log("Iniciando exclusão da pauta:", window.pautaIdAtual);
+            const { error } = await supabaseClient.from('reunioes').delete().eq('id', window.pautaIdAtual);
             
-            pautaIdAtual = null;
+            if (error) {
+                console.error("Erro Supabase:", error);
+                throw error;
+            }
+            
+            window.pautaIdAtual = null;
             alert("Planejamento excluído com sucesso! 🙏");
             fecharModalPauta();
             carregarAtas();
             
             if (typeof window.verificarPautasHome === 'function') window.verificarPautasHome();
         } catch(e) { 
-            console.error(e);
+            console.error("Erro catch:", e);
             alert("Erro ao excluir: " + e.message);
         }
     }
