@@ -100,6 +100,9 @@ async function carregarPerfilUsuario(user) {
                     window.minhasPermissoes.resumo = 'nenhum';
                     window.minhasPermissoes.pessoas = 'nenhum';
                     window.minhasPermissoes.metricas = 'nenhum';
+                    window.minhasPermissoes.ata = 'nenhum';
+                    window.minhasPermissoes.tesouraria = 'nenhum';
+                    window.minhasPermissoes.configuracoes = 'nenhum';
 
                     // Ocultar Card de Presença no Dashboard
                     const cardPresenca = document.getElementById('desktop-card-presenca');
@@ -130,7 +133,7 @@ async function carregarPerfilUsuario(user) {
                     }
 
                     for (const [menuName, permissao] of Object.entries(mapeamentoSidebar)) {
-                        if (txt.includes(menuName)) {
+                        if (txt.includes(menuName) || (menuName === 'Ata' && txt.includes('Núcleo'))) {
                             if (permissao === 'nenhum') {
                                 item.style.display = 'none';
                             } else {
