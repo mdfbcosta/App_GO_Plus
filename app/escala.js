@@ -21,10 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
 window.verificarMinhaEscalaHome = async function() {
     const alertaBox = document.getElementById('home-alerta-escala-individual');
     const msgText = document.getElementById('home-escala-texto');
-    if (!alertaBox || !window.meuNome) return;
+    const alertaUrgente = document.getElementById('home-alerta-escala-urgente');
+    const msgUrgente = document.getElementById('home-escala-urgente-texto');
+
+    if (!window.meuNome) return;
 
     try {
-        // Busca a última ata finalizada ou planejamento (pauta) que tenha escala
         const { data: reunioes } = await supabaseClient
             .from('reunioes')
             .select('*')
@@ -34,7 +36,26 @@ window.verificarMinhaEscalaHome = async function() {
 
         if (!reunioes) return;
 
-        // Procura a reunião mais recente (pauta ou finalizada) que tenha escala preenchida
+        // A. VERIFICAR SE HÁ SOLICITAÇÕES URGENTES (Para o Núcleo)
+        if (window.meuCargo !== 'Participante') {
+            const comUrgencia = (reunioes || []).find(r => {
+                try {
+                    const d = JSON.parse(r.resumo_pregacao);
+                    return d.solicitacoes && d.solicitacoes.some(s => s.texto.includes('🚩 SOLICITAÇÃO DE TROCA'));
+                } catch(e) { return false; }
+            });
+
+            if (comUrgencia && alertaUrgente) {
+                const d = JSON.parse(comUrgencia.resumo_pregacao);
+                const ultimaSol = d.solicitacoes.filter(s => s.texto.includes('🚩')).pop();
+                msgUrgente.innerHTML = `<b>${ultimaSol.membro}</b> pediu uma troca na escala do próximo GO.`;
+                alertaUrgente.style.display = 'block';
+            } else if (alertaUrgente) {
+                alertaUrgente.style.display = 'none';
+            }
+        }
+
+        // B. VERIFICAR MINHA ESCALA INDIVIDUAL
         let reuniaoComEscala = reunioes.find(r => {
             try {
                 const d = JSON.parse(r.resumo_pregacao);
@@ -42,10 +63,9 @@ window.verificarMinhaEscalaHome = async function() {
             } catch(e) { return false; }
         });
 
-        if (reuniaoComEscala) {
+        if (reuniaoComEscala && alertaBox) {
             const dados = JSON.parse(reuniaoComEscala.resumo_pregacao);
             const escala = dados.escala;
-            const meuNomeCurto = window.meuNome.toLowerCase();
             
             let missao = "";
             if (escala.pregacao === window.meuNome) missao = "🔥 Pregação";
@@ -53,10 +73,6 @@ window.verificarMinhaEscalaHome = async function() {
             else if (escala.acolhida === window.meuNome) missao = "🤝 Acolhida";
 
             if (missao) {
-                // Formatação da Data (Anti-Fuso)
-                const pura = reuniaoComEscala.data_reuniao.substring(0, 10);
-                const [ano, mes, dia] = pura.split('-');
-                
                 msgText.innerHTML = `Você está escalado para a <b>${missao}</b> no próximo GO!`;
                 alertaBox.style.display = 'block';
             } else {
@@ -105,6 +121,14 @@ window.carregarEscalaDetalhada = async function() {
             
             // Guarda o ID da reunião para caso de solicitação de mudança
             window.reuniaoEscalaAtualId = reuniaoComEscala.id;
+
+            // Mostra botão de editar apenas para Coordenador ou Secretário
+            const btnAdmin = document.getElementById('btn-admin-editar-escala');
+            if (btnAdmin) {
+                const podeEditar = (window.meuCargo === 'Coordenador' || window.meuCargo === 'Secretário');
+                btnAdmin.style.display = podeEditar ? 'block' : 'none';
+            }
+
         } else {
             containerVisualizar.style.display = 'none';
             containerVazio.style.display = 'block';
@@ -119,11 +143,9 @@ window.solicitarAlteracaoEscala = async function() {
     if (!motivo) return;
 
     try {
-        // 1. Busca a reunião atual
         const { data: ata } = await supabaseClient.from('reunioes').select('*').eq('id', window.reuniaoEscalaAtualId).single();
         let dados = JSON.parse(ata.resumo_pregacao);
 
-        // 2. Adiciona a solicitação nas "Sugestões de Mudança" (para o Secretário ver)
         if (!dados.solicitacoes) dados.solicitacoes = [];
         dados.solicitacoes.push({
             membro: window.meuNome,
@@ -131,12 +153,57 @@ window.solicitarAlteracaoEscala = async function() {
             data: new Date().toISOString()
         });
 
-        // 3. Marca como "Em Revisão" se necessário
-        dados.status = 'em_revisao';
-
         await supabaseClient.from('reunioes').update({ resumo_pregacao: JSON.stringify(dados) }).eq('id', ata.id);
         
         alert("Sua solicitação foi enviada! O núcleo foi notificado via sistema. 🙏");
         window.carregarEscalaDetalhada();
+        if (typeof window.verificarMinhaEscalaHome === 'function') window.verificarMinhaEscalaHome();
     } catch(e) { console.error("Erro ao solicitar mudança:", e); }
+};
+
+// 4. ADMINISTRATIVO: TROCA DE ESCALA (Coordenador/Secretário)
+window.abrirModalTrocaEscala = async function() {
+    if (!window.reuniaoEscalaAtualId) return;
+    try {
+        const { data: ata } = await supabaseClient.from('reunioes').select('*').eq('id', window.reuniaoEscalaAtualId).single();
+        const dados = JSON.parse(ata.resumo_pregacao);
+        const { data: membros } = await supabaseClient.from('membros').select('nome').eq('grupo_id', window.meuGrupoId).order('nome');
+
+        // Popular selects do modal
+        const selects = ['escala-edit-conducao', 'escala-edit-acolhida'];
+        selects.forEach(sid => {
+            const el = document.getElementById(sid);
+            el.innerHTML = '<option value="">Selecione um servo...</option>';
+            membros.forEach(m => el.innerHTML += `<option value="${m.nome}">${m.nome}</option>`);
+        });
+
+        document.getElementById('escala-edit-pregacao').value = dados.escala?.pregacao || "";
+        document.getElementById('escala-edit-conducao').value = dados.escala?.conducao || "";
+        document.getElementById('escala-edit-acolhida').value = dados.escala?.acolhida || "";
+
+        document.getElementById('modal-editar-escala').style.display = 'flex';
+    } catch(e) { console.error(e); }
+};
+
+window.salvarTrocaEscala = async function() {
+    try {
+        const { data: ata } = await supabaseClient.from('reunioes').select('*').eq('id', window.reuniaoEscalaAtualId).single();
+        let dados = JSON.parse(ata.resumo_pregacao);
+
+        dados.escala = {
+            pregacao: document.getElementById('escala-edit-pregacao').value,
+            conducao: document.getElementById('escala-edit-conducao').value,
+            acolhida: document.getElementById('escala-edit-acolhida').value
+        };
+
+        // Limpa as solicitações de troca ao salvar a nova escala oficial
+        dados.solicitacoes = (dados.solicitacoes || []).filter(s => !s.texto.includes('🚩 SOLICITAÇÃO DE TROCA'));
+
+        await supabaseClient.from('reunioes').update({ resumo_pregacao: JSON.stringify(dados) }).eq('id', ata.id);
+        
+        alert("Escala atualizada com sucesso! Notificações de urgência removidas.");
+        document.getElementById('modal-editar-escala').style.display = 'none';
+        window.carregarEscalaDetalhada();
+        if (typeof window.verificarMinhaEscalaHome === 'function') window.verificarMinhaEscalaHome();
+    } catch(e) { console.error(e); }
 };
