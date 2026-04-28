@@ -98,9 +98,10 @@ function exibirBotaoPautaDinamico(ata) {
     const [ano, mes, dia] = pura.split('-');
     const dataBr = `${dia}/${mes}`;
     
-    // Pega a hora de forma robusta via Regex
+    // Pega a hora de forma robusta
+    let dataReferencia = dados.data_hora_planejada || ata.data_reuniao;
     let hora = "00:00";
-    const matchHora = ata.data_reuniao.match(/(\d{2}:\d{2})/);
+    const matchHora = dataReferencia.match(/(\d{2}:\d{2})/);
     if (matchHora) hora = matchHora[1];
 
     const div = document.createElement('div');
@@ -190,14 +191,12 @@ window.editarPauta = async function() {
         const { data: ata } = await supabaseClient.from('reunioes').select('*').eq('id', window.pautaIdAtual).single();
         let dados = JSON.parse(ata.resumo_pregacao);
         
-        // CORREÇÃO ROBUSTA ANTI-FUSO
-        let dataStr = ata.data_reuniao || "";
+        // CORREÇÃO ROBUSTA: Prioriza o que está no JSON para não perder a hora
+        let dataStr = dados.data_hora_planejada || ata.data_reuniao || "";
         if (dataStr.includes(' ')) dataStr = dataStr.replace(' ', 'T');
-        
-        // Se a data vier sem hora (apenas 10 caracteres), adiciona T00:00
         if (dataStr.length === 10) dataStr += "T00:00";
         
-        const finalData = dataStr.substring(0, 16); // Garante formato AAAA-MM-DDTHH:mm
+        const finalData = dataStr.substring(0, 16);
         
         document.getElementById('pauta-data').value = finalData;
         document.getElementById('pauta-local').value = dados.local || "";
@@ -223,7 +222,8 @@ window.salvarPauta = async function() {
         informativos: "", 
         local: "", 
         horarios: {inicio:"", fim:""},
-        escala: { pregacao: "", conducao: "", acolhida: "" }
+        escala: { pregacao: "", conducao: "", acolhida: "" },
+        data_hora_planejada: dataVal // NOVO: Salva aqui para evitar perda de fuso/hora no banco
     };
 
     try {
