@@ -93,15 +93,21 @@ function exibirBotaoPautaDinamico(ata) {
     const listArea = document.getElementById('lista-proximas-reunioes');
     if (!listArea) return;
     
+    let dados = {};
+    try { dados = JSON.parse(ata.resumo_pregacao || '{}'); } catch(e) {}
+
     // SOLUÇÃO DEFINITIVA: Pegar dia e mês diretamente do texto (AAAA-MM-DD)
-    const pura = ata.data_reuniao.substring(0, 10);
-    const [ano, mes, dia] = pura.split('-');
-    const dataBr = `${dia}/${mes}`;
+    const pura = (ata.data_reuniao || "").substring(0, 10);
+    let dataBr = "--/--";
+    if (pura.includes('-')) {
+        const [ano, mes, dia] = pura.split('-');
+        dataBr = `${dia}/${mes}`;
+    }
     
     // Pega a hora de forma robusta
     let dataReferencia = String(dados.data_hora_planejada || ata.data_reuniao || "");
     let hora = "00:00";
-    if (dataReferencia) {
+    if (dataReferencia && dataReferencia !== "null") {
         const matchHora = dataReferencia.match(/(\d{2}:\d{2})/);
         if (matchHora) hora = matchHora[1];
     }
