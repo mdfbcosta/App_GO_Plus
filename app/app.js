@@ -512,10 +512,12 @@ window.verificarPautasHome = async function() {
             const [ano, mes, dia] = pura.split('-');
             
             // Backup: Se o banco zerar a hora, tentamos pegar do JSON
-            let dataReferencia = dados.data_hora_planejada || pauta.data_reuniao;
+            let dataReferencia = String(dados.data_hora_planejada || pauta.data_reuniao || "");
             let hora = "00:00";
-            const matchHora = dataReferencia.match(/(\d{2}:\d{2})/);
-            if (matchHora) hora = matchHora[1];
+            if (dataReferencia) {
+                const matchHora = dataReferencia.match(/(\d{2}:\d{2})/);
+                if (matchHora) hora = matchHora[1];
+            }
             
             const dataAt = `${dia}/${mes} às ${hora}`;
             

@@ -99,10 +99,12 @@ function exibirBotaoPautaDinamico(ata) {
     const dataBr = `${dia}/${mes}`;
     
     // Pega a hora de forma robusta
-    let dataReferencia = dados.data_hora_planejada || ata.data_reuniao;
+    let dataReferencia = String(dados.data_hora_planejada || ata.data_reuniao || "");
     let hora = "00:00";
-    const matchHora = dataReferencia.match(/(\d{2}:\d{2})/);
-    if (matchHora) hora = matchHora[1];
+    if (dataReferencia) {
+        const matchHora = dataReferencia.match(/(\d{2}:\d{2})/);
+        if (matchHora) hora = matchHora[1];
+    }
 
     const div = document.createElement('div');
     // Estilo ultra-reforçado para evitar sobreposição
