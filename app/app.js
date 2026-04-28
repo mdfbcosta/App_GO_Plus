@@ -107,22 +107,16 @@ async function carregarPerfilUsuario(user) {
                 });
             }
 
-            if (regras && regras.permissoes) {
-                window.minhasPermissoes = { ...regras.permissoes };
+            // Merge finalizado
                 
-                // Ajustes específicos para Participante
-                if (membro.cargo === 'Participante') {
-                    window.minhasPermissoes.resumo = 'nenhum';
-                    window.minhasPermissoes.pessoas = 'nenhum';
-                    window.minhasPermissoes.metricas = 'nenhum';
-                    window.minhasPermissoes.ata = 'nenhum';
-                    window.minhasPermissoes.tesouraria = 'nenhum';
-                    window.minhasPermissoes.configuracoes = 'nenhum';
-
-                    // Ocultar Card de Presença no Dashboard
-                    const cardPresenca = document.getElementById('desktop-card-presenca');
-                    if (cardPresenca) cardPresenca.style.display = 'none';
-                }
+            // Fallback Participante
+            if (membro.cargo.includes('Participante')) {
+                const p = window.minhasPermissoes;
+                if (!p.resumo) p.resumo = 'nenhum';
+                if (!p.ata) p.ata = 'nenhum';
+                const cardPresenca = document.getElementById('desktop-card-presenca');
+                if (cardPresenca) cardPresenca.style.display = 'none';
+            }
 
                 const p = window.minhasPermissoes;
 
