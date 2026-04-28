@@ -80,17 +80,32 @@ async function carregarPerfilUsuario(user) {
                 }
             }
 
-            // 2. Aplicar RBAC (Role-Based Access Control) Dinâmico
-            let cargoBusca = membro.cargo;
-            if (cargoBusca && cargoBusca.startsWith('Ministério ')) {
-                cargoBusca = 'Coord. Ministério';
-            }
+            // 2. Aplicar RBAC (Role-Based Access Control) Dinâmico com Múltiplos Cargos
+            const listaCargos = (membro.cargo || "Participante").split(', ').map(c => {
+                let cb = c.trim();
+                if (cb.startsWith('Ministério ')) return 'Coord. Ministério';
+                return cb;
+            });
 
-            const { data: regras } = await supabaseClient
+            const { data: todasRegras } = await supabaseClient
                 .from('cargos_permissoes')
-                .select('permissoes')
-                .eq('cargo', cargoBusca)
-                .maybeSingle(); // Use maybeSingle para evitar erro se não existir
+                .select('cargo, permissoes')
+                .in('cargo', listaCargos);
+
+            // Merge de permissões
+            window.minhasPermissoes = {};
+            const niveis = { 'total': 3, 'escrita': 2, 'leitura': 1, 'nenhum': 0 };
+
+            if (todasRegras) {
+                todasRegras.forEach(regra => {
+                    const p = regra.permissoes;
+                    for (const modulo in p) {
+                        const nivelAtual = niveis[window.minhasPermissoes[modulo]] || 0;
+                        const nivelNovo = niveis[p[modulo]] || 0;
+                        if (nivelNovo > nivelAtual) window.minhasPermissoes[modulo] = p[modulo];
+                    }
+                });
+            }
 
             if (regras && regras.permissoes) {
                 window.minhasPermissoes = { ...regras.permissoes };

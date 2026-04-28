@@ -244,28 +244,38 @@ window.salvarConfiguracoes = async function() {
             .eq('grupo_id', window.meuGrupoId)
             .neq('cargo', 'Coordenador');
 
-        // Reunir todos os inputs preenchidos
+        // Reunir todos os inputs preenchidos e agrupar por membro
         const inputs = [
             ...document.querySelectorAll('.input-cargo-min'),
             ...document.querySelectorAll('.input-cargo-nuc'),
             ...document.querySelectorAll('.input-cargo-convidado')
         ];
 
+        const cargosPorMembro = {}; // { membroId: [cargo1, cargo2] }
+
         for (const input of inputs) {
             const cargo = input.getAttribute('data-cargo');
             const nomeDigitado = input.value.trim();
 
             if (nomeDigitado) {
-                // Encontrar o membro pelo nome
                 const membro = window.membrosCache.find(m => m.nome.toLowerCase() === nomeDigitado.toLowerCase());
-                
                 if (membro && membro.cargo !== 'Coordenador') {
-                    await supabaseClient.from('membros')
-                        .update({ cargo: cargo })
-                        .eq('id', membro.id);
+                    if (!cargosPorMembro[membro.id]) cargosPorMembro[membro.id] = [];
+                    if (!cargosPorMembro[membro.id].includes(cargo)) {
+                        cargosPorMembro[membro.id].push(cargo);
+                    }
                 }
             }
         }
+
+        // Executar atualizações em paralelo para ser mais rápido
+        const promises = Object.entries(cargosPorMembro).map(([id, cargos]) => {
+            return supabaseClient.from('membros')
+                .update({ cargo: cargos.join(', ') })
+                .eq('id', id);
+        });
+
+        await Promise.all(promises);
 
         alert("Configurações salvas com sucesso!");
         carregarConfiguracoes(); // Recarrega para atualizar a interface
