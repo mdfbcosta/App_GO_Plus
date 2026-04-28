@@ -1015,9 +1015,8 @@
                             <div class="flex-col gap-3">
                                 <div>
                                     <label style="font-size:0.6rem; font-weight:800; color:var(--primary-blue); text-transform:uppercase;">Pregação:</label>
-                                    <select id="ata-escala-pregacao" class="input-field">
-                                        <option value="">Carregando membros...</option>
-                                    </select>
+                                    <input type="text" id="ata-escala-pregacao" class="input-field" list="lista-membros-escala" placeholder="Selecione ou digite o nome">
+                                    <datalist id="lista-membros-escala"></datalist>
                                 </div>
                                 <div>
                                     <label style="font-size:0.6rem; font-weight:800; color:var(--primary-blue); text-transform:uppercase;">Condução da Oração:</label>

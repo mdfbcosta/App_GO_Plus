@@ -275,11 +275,19 @@ window.iniciarReuniaoAgora = async function(idAtaManual = null) {
         document.getElementById('ata-avaliacao-go').value = dados.avaliacao_go || "";
         document.getElementById('ata-informativos-decisões').value = dados.informativos || "";
 
-        // Novos campos de Escala (Popular selects)
-        const selectsEscala = ['ata-escala-pregacao', 'ata-escala-conducao', 'ata-escala-acolhida'];
+        // Novos campos de Escala (Popular selects e datalist)
         const { data: todosMembros } = await supabaseClient.from('membros').select('id, nome').eq('grupo_id', window.meuGrupoId).order('nome');
         
-        selectsEscala.forEach(sid => {
+        // 1. Datalist para Pregação (Permite digitar nomes externos)
+        const datalist = document.getElementById('lista-membros-escala');
+        if (datalist) {
+            datalist.innerHTML = (todosMembros || []).map(m => `<option value="${m.nome}">`).join('');
+        }
+        document.getElementById('ata-escala-pregacao').value = dados.escala?.pregacao || "";
+
+        // 2. Selects para Condução e Acolhida (Restrito aos servos)
+        const selectsInternos = ['ata-escala-conducao', 'ata-escala-acolhida'];
+        selectsInternos.forEach(sid => {
             const el = document.getElementById(sid);
             if (el) {
                 el.innerHTML = '<option value="">Selecione um servo...</option>';
@@ -288,8 +296,6 @@ window.iniciarReuniaoAgora = async function(idAtaManual = null) {
                         el.innerHTML += `<option value="${m.nome}">${m.nome}</option>`;
                     });
                 }
-                // Define o valor salvo
-                if (sid === 'ata-escala-pregacao') el.value = dados.escala?.pregacao || "";
                 if (sid === 'ata-escala-conducao') el.value = dados.escala?.conducao || "";
                 if (sid === 'ata-escala-acolhida') el.value = dados.escala?.acolhida || "";
             }
