@@ -105,6 +105,106 @@ body {
     box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
 
+/* =========================================
+   NOTIFICAÇÕES (SININHO)
+========================================= */
+.notification-container {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.notification-container:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.notification-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: var(--primary-red);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--primary-blue);
+}
+
+.notification-panel {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 320px;
+    max-height: 400px;
+    background: white;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 3000;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.notification-header {
+    padding: 15px;
+    background: #f8fafc;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-list {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.notification-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.notification-item:hover {
+    background: #f8fafc;
+}
+
+.notification-item.unread {
+    background: #f0f7ff;
+}
+
+.notification-item-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-bottom: 3px;
+}
+
+.notification-item-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.notification-item-time {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    margin-top: 5px;
+}
+
 /* Estilos Premium para o Resumo */
 .resumo-card-container {
     position: relative;

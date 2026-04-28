@@ -479,6 +479,11 @@ async function carregarDashboard() {
             await window.verificarMinhaEscalaHome();
         }
 
+        // 10. Carregar Notificações do Sininho (Novo)
+        if (typeof window.carregarNotificacoes === 'function') {
+            await window.carregarNotificacoes();
+        }
+
     } catch (err) {
         console.error("Erro ao carregar dashboard:", err);
     }
