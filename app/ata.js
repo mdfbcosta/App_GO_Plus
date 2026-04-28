@@ -66,13 +66,12 @@ async function carregarAtas() {
             let dados = {}; 
             try { dados = JSON.parse(ata.resumo_pregacao || '{}'); } catch(e) { dados = { desenvolvimento: ata.resumo_pregacao, status: 'finalizada' }; }
 
-            if (dados.status === 'pauta') {
+            if (dados.status === 'pauta' || dados.status === 'em_andamento') {
                 if (containerBtn) {
                     containerBtn.style.display = 'block';
                     exibirBotaoPautaDinamico(ata);
                 }
             } else {
-                // ... resto da lógica de pendentes e histórico (não muda)
                 const nPresentes = (dados.presentes || []).length;
                 const nAssinaturas = Object.keys(dados.assinaturas || {}).length;
                 const dataFinal = new Date(dados.data_finalizacao || ata.data_reuniao);
@@ -96,7 +95,6 @@ function exibirBotaoPautaDinamico(ata) {
     let dados = {};
     try { dados = JSON.parse(ata.resumo_pregacao || '{}'); } catch(e) {}
 
-    // SOLUÇÃO DEFINITIVA: Pegar dia e mês diretamente do texto (AAAA-MM-DD)
     const pura = (ata.data_reuniao || "").substring(0, 10);
     let dataBr = "--/--";
     if (pura.includes('-')) {
@@ -104,7 +102,6 @@ function exibirBotaoPautaDinamico(ata) {
         dataBr = `${dia}/${mes}`;
     }
     
-    // Pega a hora de forma robusta
     let dataReferencia = String(dados.data_hora_planejada || ata.data_reuniao || "");
     let hora = "00:00";
     if (dataReferencia && dataReferencia !== "null") {
@@ -113,25 +110,47 @@ function exibirBotaoPautaDinamico(ata) {
     }
 
     const div = document.createElement('div');
-    // Estilo ultra-reforçado para evitar sobreposição
     div.style.cssText = "display: block !important; width: 100% !important; margin-bottom: 25px !important; position: relative !important; clear: both !important; float: none !important;";
-    div.innerHTML = `
-        <div style="padding: 15px; border: 2px solid #3b82f6; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <button class="btn btn-primary flex justify-between items-center" style="width:100%; padding:15px; border-radius:8px; margin-bottom: 12px;" onclick="window.pautaIdAtual='${ata.id}'; window.iniciarReuniaoAgora('${ata.id}');">
+    
+    let btnHtml = "";
+    if (dados.status === 'em_andamento') {
+        btnHtml = `
+            <button class="btn flex justify-between items-center" style="width:100%; padding:15px; border-radius:8px; margin-bottom: 12px; border: 2px solid #ef4444; background: #fff5f5; color: #b91c1c;" onclick="window.pautaIdAtual='${ata.id}'; window.iniciarReuniaoAgora('${ata.id}');">
                 <div class="text-left">
-                    <div style="font-size:1rem; font-weight:800;">Reunião: ${dataBr} às ${hora}</div>
+                    <div style="font-size:1rem; font-weight:800;"><span style="background: var(--primary-red); color:white; font-size:0.6rem; padding:2px 6px; border-radius:4px; margin-right:8px;">RASCUNHO</span> ${dataBr} às ${hora}</div>
+                    <div style="font-size:0.65rem; opacity:0.9; text-transform:uppercase; font-weight:700;">▶️ Continuar Preenchimento</div>
+                </div>
+                <span style="font-size:1.5rem;">📝</span>
+            </button>`;
+    } else {
+        btnHtml = `
+            <button class="btn btn-primary flex justify-between items-center" style="width:100%; padding:15px; border-radius:8px; margin-bottom: 12px; border: 2px solid #3b82f6;" onclick="window.pautaIdAtual='${ata.id}'; window.iniciarReuniaoAgora('${ata.id}');">
+                <div class="text-left">
+                    <div style="font-size:1rem; font-weight:800;"><span style="background: var(--primary-blue); color:white; font-size:0.6rem; padding:2px 6px; border-radius:4px; margin-right:8px;">PLANEJADA</span> ${dataBr} às ${hora}</div>
                     <div style="font-size:0.65rem; opacity:0.9; text-transform:uppercase; font-weight:700;">▶️ Iniciar Reunião de Núcleo</div>
                 </div>
                 <span style="font-size:1.5rem;">📝</span>
-            </button>
+            </button>`;
+    }
+
+    div.innerHTML = `
+        <div style="padding: 15px; border: 1px solid #e2e8f0; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            ${btnHtml}
             <div class="flex gap-2">
-                <button class="btn btn-outline" style="flex:1; font-size: 0.75rem; background:#f0f7ff; padding:10px; border-radius:8px; font-weight:700; border: 1px solid #3b82f6;" onclick="window.pautaIdAtual='${ata.id}'; window.editarPauta();">✏️ Editar</button>
+                <button class="btn btn-outline" style="flex:1; font-size: 0.75rem; background:#f0f7ff; padding:10px; border-radius:8px; font-weight:700; border: 1px solid #3b82f6;" onclick="window.pautaIdAtual='${ata.id}'; window.editarPauta();">✏️ Editar Pauta</button>
                 <button class="btn btn-outline" style="color:#ef4444; border-color:#fee2e2; background:#fff1f2; flex:0.3; font-size: 0.8rem; padding:10px; border-radius:8px;" onclick="window.pautaIdAtual='${ata.id}'; window.cancelarPauta();">🗑️</button>
             </div>
         </div>
     `;
     listArea.appendChild(div);
 }
+
+window.fecharModalAta = function() {
+    if (confirm("Deseja mesmo sair? Se você não salvou como rascunho, poderá perder o que digitou nesta sessão.")) {
+        document.getElementById('modal-ata-execucao').style.display = 'none';
+        ataEmEdicao = null;
+    }
+};
 
 function exibirAtaPendente(ata, dados) {
     const lista = document.getElementById('lista-atas-pendentes');
@@ -323,6 +342,35 @@ window.iniciarReuniaoAgora = async function(idAtaManual = null) {
             });
         }
         document.getElementById('modal-ata-execucao').style.display = 'flex';
+    } catch(e) { console.error(e); }
+};
+
+window.salvarRascunhoAta = async function() {
+    if (!ataEmEdicao) return;
+    const dados = {
+        status: 'em_andamento',
+        pautas: JSON.parse(ataEmEdicao.resumo_pregacao).pautas,
+        horarios: { inicio: document.getElementById('ata-hora-inicio').value, fim: document.getElementById('ata-hora-fim').value },
+        local: document.getElementById('ata-local').value,
+        mocoes_go: document.getElementById('ata-mocoes-go').value,
+        mocoes_proxima: document.getElementById('ata-mocoes-proxima').value,
+        avaliacao_go: document.getElementById('ata-avaliacao-go').value,
+        informativos: document.getElementById('ata-informativos-decisões').value,
+        escala: {
+            pregacao: document.getElementById('ata-escala-pregacao').value,
+            conducao: document.getElementById('ata-escala-conducao').value,
+            acolhida: document.getElementById('ata-escala-acolhida').value
+        },
+        presentes: Array.from(document.querySelectorAll('.check-presenca:checked')).map(c => c.value),
+        assinaturas: JSON.parse(ataEmEdicao.resumo_pregacao).assinaturas || {},
+        solicitacoes: JSON.parse(ataEmEdicao.resumo_pregacao).solicitacoes || [],
+        data_hora_planejada: JSON.parse(ataEmEdicao.resumo_pregacao).data_hora_planejada
+    };
+    try {
+        await supabaseClient.from('reunioes').update({ resumo_pregacao: JSON.stringify(dados) }).eq('id', ataEmEdicao.id);
+        alert("Rascunho salvo com sucesso! Você pode continuar depois.");
+        fecharModalAta();
+        carregarAtas();
     } catch(e) { console.error(e); }
 };
 
