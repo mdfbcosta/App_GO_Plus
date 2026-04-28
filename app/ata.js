@@ -103,7 +103,8 @@ function exibirBotaoPautaDinamico(ata) {
     if (ata.data_reuniao.includes('T')) {
         hora = ata.data_reuniao.split('T')[1].substring(0, 5);
     } else if (ata.data_reuniao.includes(' ')) {
-        hora = ata.data_reuniao.split(' ')[1].substring(0, 5);
+        const partes = ata.data_reuniao.split(' ');
+        if (partes[1]) hora = partes[1].substring(0, 5);
     }
 
     const div = document.createElement('div');
@@ -192,9 +193,13 @@ window.editarPauta = async function() {
     try {
         const { data: ata } = await supabaseClient.from('reunioes').select('*').eq('id', window.pautaIdAtual).single();
         let dados = JSON.parse(ata.resumo_pregacao);
-        const d = new Date(ata.data_reuniao);
-        const iso = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().substring(0, 16);
-        document.getElementById('pauta-data').value = iso;
+        
+        // CORREÇÃO ANTI-FUSO PARA INPUT DATETIME-LOCAL
+        let dataStr = ata.data_reuniao;
+        if (dataStr.includes(' ')) dataStr = dataStr.replace(' ', 'T');
+        const finalData = dataStr.substring(0, 16); // AAAA-MM-DDTHH:mm
+        
+        document.getElementById('pauta-data').value = finalData;
         document.getElementById('pauta-local').value = dados.local || "";
         document.getElementById('pauta-topicos').value = dados.pautas || "";
         document.getElementById('modal-pauta-titulo').innerText = "Editar Planejamento";

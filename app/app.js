@@ -510,7 +510,15 @@ window.verificarPautasHome = async function() {
             // Formatação Anti-Fuso (Texto Puro)
             const pura = pauta.data_reuniao.substring(0, 10);
             const [ano, mes, dia] = pura.split('-');
-            const hora = pauta.data_reuniao.includes('T') ? pauta.data_reuniao.split('T')[1].substring(0, 5) : "--:--";
+            
+            let hora = "--:--";
+            if (pauta.data_reuniao.includes('T')) {
+                hora = pauta.data_reuniao.split('T')[1].substring(0, 5);
+            } else if (pauta.data_reuniao.includes(' ')) {
+                const partes = pauta.data_reuniao.split(' ');
+                if (partes[1]) hora = partes[1].substring(0, 5);
+            }
+            
             const dataAt = `${dia}/${mes} às ${hora}`;
             
             const topico = (dados.pautas || "Assuntos gerais").split('\n')[0];
