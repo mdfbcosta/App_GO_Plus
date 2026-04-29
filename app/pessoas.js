@@ -43,20 +43,35 @@ async function carregarPessoas() {
             const card = document.createElement('div');
             card.className = 'card flex justify-between items-center';
             card.style.padding = '12px 15px';
-            card.style.marginBottom = '0'; // Usando gap do flex-col
+            card.style.marginBottom = '0';
             
             const foto = m.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.nome)}&background=1E3A8A&color=fff`;
 
-            // Define se é servo ou ovelha
-            // É servo se tiver qualquer cargo que NÃO seja 'Participante'
+            // Lógica de Núcleo e Abreviação
+            let cargoExibicao = m.cargo || 'Participante';
+            
+            // Abbreviate Ministério -> M.
+            cargoExibicao = cargoExibicao.replace(/Ministério/g, 'M.');
+
+            // Identificar se é núcleo
+            const funcoesNucleo = ["Coordenador", "Secretário", "Tesoureiro"];
+            const roles = (m.cargo || "").split(', ');
+            const ehNucleo = roles.some(r => funcoesNucleo.includes(r) || r.startsWith('Ministério'));
+
+            if (ehNucleo) {
+                cargoExibicao = `<b>Núcleo</b>, ${cargoExibicao}`;
+                card.style.background = '#fffbeb'; // Amarelo bem clarinho
+                card.style.borderLeft = '4px solid #facc15'; // Borda amarela/ouro
+            }
+
             const ehServo = m.cargo && m.cargo !== 'Participante';
 
             card.innerHTML = `
                 <div class="flex items-center gap-3">
-                    <img src="${foto}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border: 2px solid #f1f5f9;">
+                    <img src="${foto}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border: 2px solid ${ehNucleo ? '#facc15' : '#f1f5f9'};">
                     <div>
                         <div style="font-weight: 700; color: var(--primary-blue); font-size: 0.95rem;">${m.nome}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">${m.cargo || 'Participante'}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">${cargoExibicao}</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
