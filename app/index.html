@@ -615,7 +615,9 @@
                 <div class="flex justify-between items-center" style="margin-bottom: 20px;">
                     <h2 style="color: var(--primary-blue);">Central de Notícias</h2>
                     <div class="flex gap-2">
+                        <span id="noticia-draft-status" style="font-size: 0.7rem; color: var(--text-muted); align-self: center; margin-right: 10px;"></span>
                         <button class="btn btn-outline" id="btn-voltar-noticias-hub" style="display:none; margin:0;" onclick="mostrarHubNoticias()">← Voltar</button>
+                        <button class="btn btn-outline btn-form-noticia" style="display:none; margin:0;" onclick="salvarRascunhoNoticia()">Salvar Rascunho</button>
                         <button class="btn btn-primary btn-form-noticia" id="btn-publicar-noticia" style="display:none; margin:0;" onclick="publicarNoticia()">Publicar Notícia</button>
                     </div>
                 </div>
@@ -627,6 +629,9 @@
                         <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;">Mantenha o grupo atualizado com as últimas novidades!</p>
                         
                         <div class="flex flex-col gap-3">
+                            <button id="hub-noticia-draft" class="btn btn-outline" style="justify-content: flex-start; gap: 10px; display: none;" onclick="prepararFormNoticia('rascunho')">
+                                📝 Continuar Editando Rascunho
+                            </button>
                             <button id="hub-noticia-edit" class="btn btn-outline" style="justify-content: flex-start; gap: 10px; display: none;" onclick="prepararFormNoticia('edit')">
                                 ✨ Editar Última Notícia
                             </button>
@@ -639,14 +644,20 @@
                 
                 <div id="form-noticia-container" class="card" style="max-width: 800px; display: none;">
                     <form id="form-noticia" class="flex-col gap-4">
-                        <div>
-                            <label style="font-size:0.85rem; font-weight:500; color:var(--text-muted);">Título da Notícia</label>
-                            <input type="text" id="noticia-titulo-input" class="input-field" placeholder="Ex: Grande encontro de mulheres!" required>
+                        <div class="flex gap-4">
+                            <div style="flex: 1;">
+                                <label style="font-size:0.85rem; font-weight:500; color:var(--text-muted);">Data da Notícia</label>
+                                <input type="date" id="noticia-data-input" class="input-field" required onchange="autoSaveNoticiaDraft()">
+                            </div>
+                            <div style="flex: 2;">
+                                <label style="font-size:0.85rem; font-weight:500; color:var(--text-muted);">Título da Notícia</label>
+                                <input type="text" id="noticia-titulo-input" class="input-field" placeholder="Ex: Grande encontro de mulheres!" required oninput="autoSaveNoticiaDraft()">
+                            </div>
                         </div>
 
                         <div>
                             <label style="font-size:0.85rem; font-weight:500; color:var(--text-muted);">Conteúdo da Notícia</label>
-                            <textarea id="noticia-texto-input" class="input-field" rows="5" placeholder="Conte os detalhes do que aconteceu..." required></textarea>
+                            <textarea id="noticia-texto-input" class="input-field" rows="5" placeholder="Conte os detalhes do que aconteceu..." required oninput="autoSaveNoticiaDraft()"></textarea>
                         </div>
 
                         <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px dashed #cbd5e1;">

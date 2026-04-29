@@ -13,12 +13,17 @@ window.mostrarHubNoticias = async function() {
     const hub = document.getElementById('noticias-hub');
     const container = document.getElementById('form-noticia-container');
     const btnVoltar = document.getElementById('btn-voltar-noticias-hub');
-    const btnPub = document.getElementById('btn-publicar-noticia');
+    const btnForms = document.querySelectorAll('.btn-form-noticia');
 
     if (hub) hub.style.display = 'flex';
     if (container) container.style.display = 'none';
     if (btnVoltar) btnVoltar.style.display = 'none';
-    if (btnPub) btnPub.style.display = 'none';
+    btnForms.forEach(b => b.style.display = 'none');
+
+    // Verificar Rascunho Local
+    const saved = localStorage.getItem('go_plus_noticia_draft');
+    const btnDraft = document.getElementById('hub-noticia-draft');
+    if (btnDraft) btnDraft.style.display = saved ? 'flex' : 'none';
 
     if (window.meuGrupoId) {
         try {
@@ -48,16 +53,14 @@ window.prepararFormNoticia = function(modo) {
         const hub = document.getElementById('noticias-hub');
         const container = document.getElementById('form-noticia-container');
         const btnVoltar = document.getElementById('btn-voltar-noticias-hub');
-        const btnPub = document.getElementById('btn-publicar-noticia');
+        const btnForms = document.querySelectorAll('.btn-form-noticia');
 
         if (hub) hub.style.display = 'none';
         if (container) container.style.display = 'block';
         if (btnVoltar) btnVoltar.style.display = 'block';
-        if (btnPub) {
-            btnPub.style.display = 'block';
-            btnPub.innerText = modo === 'edit' ? "Salvar Alterações" : "Publicar Notícia";
-        }
+        btnForms.forEach(b => b.style.display = 'block');
 
+        const btnPub = document.getElementById('btn-publicar-noticia');
         const form = document.getElementById('form-noticia');
         if (form) form.reset();
         
@@ -65,18 +68,28 @@ window.prepararFormNoticia = function(modo) {
         const previews = document.getElementById('noticia-fotos-previews');
         if (previews) previews.innerHTML = '';
         
-        noticiaModo = modo;
+        noticiaModo = 'novo';
         noticiaIdEmEdicao = null;
+        if (btnPub) btnPub.innerText = "Publicar Notícia";
 
-        if (modo === 'edit' && window.ultimaNoticiaCache) {
+        if (modo === 'rascunho') {
+            const saved = JSON.parse(localStorage.getItem('go_plus_noticia_draft'));
+            if (saved) {
+                document.getElementById('noticia-data-input').value = saved.data || '';
+                document.getElementById('noticia-titulo-input').value = saved.titulo || '';
+                document.getElementById('noticia-texto-input').value = saved.texto || '';
+                noticiasFotosBase64 = saved.fotos || [];
+                renderPreviewsNoticia();
+            }
+        } else if (modo === 'edit' && window.ultimaNoticiaCache) {
             const n = window.ultimaNoticiaCache;
             noticiaIdEmEdicao = n.id;
+            noticiaModo = 'edit';
+            if (btnPub) btnPub.innerText = "Salvar Alterações";
             
-            const inputTitulo = document.getElementById('noticia-titulo-input');
-            const inputTexto = document.getElementById('noticia-texto-input');
-            
-            if (inputTitulo) inputTitulo.value = n.titulo || '';
-            if (inputTexto) inputTexto.value = n.texto || '';
+            document.getElementById('noticia-data-input').value = n.data_ocorrido || '';
+            document.getElementById('noticia-titulo-input').value = n.titulo || '';
+            document.getElementById('noticia-texto-input').value = n.texto || '';
             
             let fotos = [];
             try { fotos = typeof n.fotos === 'string' ? JSON.parse(n.fotos) : (n.fotos || []); } catch(e){}
@@ -111,6 +124,7 @@ window.previewFotosNoticia = async function(event) {
     event.target.value = '';
     renderPreviewsNoticia();
     atualizarContadorFotosNoticia();
+    autoSaveNoticiaDraft();
 };
 
 function renderPreviewsNoticia() {
@@ -121,18 +135,32 @@ function renderPreviewsNoticia() {
         const div = document.createElement('div');
         div.style.position = 'relative';
         div.style.width = '80px';
+        
+        const isCapa = i === 0;
         div.innerHTML = `
-            <img src="${src}" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid #eee;">
+            <img src="${src}" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid ${isCapa ? 'var(--primary-red)' : '#eee'};">
             <button type="button" onclick="removerFotoNoticia(${i})" style="position:absolute; top:-5px; right:-5px; background:white; border:1px solid #ddd; border-radius:50%; width:20px; height:20px; font-size:12px; color:red; cursor:pointer;">&times;</button>
+            ${isCapa ? 
+                '<span style="position:absolute; bottom:0; left:0; width:100%; background:var(--primary-red); color:white; font-size:0.5rem; text-align:center; border-radius:0 0 8px 8px; font-weight:800;">CAPA</span>' : 
+                `<button type="button" onclick="definirCapaNoticia(${i})" style="position:absolute; bottom:0; left:0; width:100%; background:rgba(255,255,255,0.8); border:none; color:var(--primary-blue); font-size:0.5rem; text-align:center; border-radius:0 0 8px 8px; cursor:pointer;">Capa</button>`
+            }
         `;
         c.appendChild(div);
     });
 }
 
+window.definirCapaNoticia = function(index) {
+    const f = noticiasFotosBase64.splice(index, 1)[0];
+    noticiasFotosBase64.unshift(f);
+    renderPreviewsNoticia();
+    autoSaveNoticiaDraft();
+};
+
 window.removerFotoNoticia = function(index) {
     noticiasFotosBase64.splice(index, 1);
     renderPreviewsNoticia();
     atualizarContadorFotosNoticia();
+    autoSaveNoticiaDraft();
 };
 
 window.atualizarContadorFotosNoticia = function() {
@@ -140,11 +168,31 @@ window.atualizarContadorFotosNoticia = function() {
     if (el) el.innerText = 5 - noticiasFotosBase64.length > 0 ? `Escolha mais ${5 - noticiasFotosBase64.length} fotos` : "Limite atingido";
 };
 
+window.autoSaveNoticiaDraft = function() {
+    if (noticiaModo === 'edit') return;
+    const draft = {
+        data: document.getElementById('noticia-data-input').value,
+        titulo: document.getElementById('noticia-titulo-input').value,
+        texto: document.getElementById('noticia-texto-input').value,
+        fotos: noticiasFotosBase64
+    };
+    localStorage.setItem('go_plus_noticia_draft', JSON.stringify(draft));
+    const st = document.getElementById('noticia-draft-status');
+    if (st) st.innerText = `Salvo: ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+};
+
+window.salvarRascunhoNoticia = function() {
+    autoSaveNoticiaDraft();
+    alert("Rascunho salvo localmente!");
+    mostrarHubNoticias();
+};
+
 window.publicarNoticia = async function() {
     if (!window.meuGrupoId) return;
     const btn = document.getElementById('btn-publicar-noticia');
     if (!btn) return;
 
+    const dataOcorrido = document.getElementById('noticia-data-input').value;
     const titulo = document.getElementById('noticia-titulo-input').value.trim();
     const texto = document.getElementById('noticia-texto-input').value.trim();
 
@@ -163,7 +211,8 @@ window.publicarNoticia = async function() {
             membro_id: window.meuMembroId,
             titulo: titulo,
             texto: texto,
-            fotos: noticiasFotosBase64
+            fotos: noticiasFotosBase64,
+            data_ocorrido: dataOcorrido // Novo campo para data do evento
         };
 
         if (noticiaModo === 'edit' && noticiaIdEmEdicao) {
@@ -180,6 +229,7 @@ window.publicarNoticia = async function() {
                 .insert([dados]);
             if (error) throw error;
             alert("Notícia publicada com sucesso!");
+            localStorage.removeItem('go_plus_noticia_draft');
         }
 
         mostrarHubNoticias();
@@ -221,7 +271,7 @@ window.reagirNoticia = async function(noticiaId) {
         if (countEl) countEl.innerText = lista.length;
         if (iconEl) {
             iconEl.innerText = index > -1 ? '🤍' : '❤️';
-            iconEl.parentElement.style.color = index > -1 ? '#64748b' : '#ef4444';
+            iconEl.style.color = index > -1 ? '#262626' : '#ed4956';
         }
         
     } catch (e) { console.error("Erro ao curtir:", e); }

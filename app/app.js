@@ -459,7 +459,7 @@ async function carregarAconteceu() {
             if (listaDesk) listaDesk.innerHTML = empty;
         } else {
             noticias.forEach(n => {
-                const dataStr = new Date(n.criado_em).toLocaleDateString('pt-BR');
+                const dataExibicao = n.data_ocorrido ? new Date(n.data_ocorrido + 'T12:00:00').toLocaleDateString('pt-BR') : new Date(n.criado_em).toLocaleDateString('pt-BR');
                 const fotoMembro = n.membros?.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(n.membros?.nome || 'U')}&background=1E3A8A&color=fff`;
                 
                 let fotosArr = [];
@@ -475,7 +475,7 @@ async function carregarAconteceu() {
                             <img src="${fotoMembro}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border: 1px solid #dbdbdb; padding: 1px;">
                             <div class="flex flex-col">
                                 <span style="font-size: 0.75rem; font-weight:700; color:#262626;">${n.membros?.nome || 'GO+'}</span>
-                                <span style="font-size: 0.6rem; color:#8e8e8e;">${dataStr}</span>
+                                <span style="font-size: 0.6rem; color:#8e8e8e;">${dataExibicao}</span>
                             </div>
                         </div>
 
