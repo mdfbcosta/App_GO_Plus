@@ -383,8 +383,6 @@ async function salvarEvento(e) {
             localStorage.setItem('go_plus_eventos_drafts', JSON.stringify(drafts));
         }
         
-        }
-        
         const mesParaRecarregar = new Date(dataInput).getMonth();
         fecharModalEvento(); 
         carregarMesesTabs(mesParaRecarregar);
