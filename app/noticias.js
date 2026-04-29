@@ -10,7 +10,7 @@ let listaNoticiasCache = [];
 // --- HUB E NAVEGAÇÃO ---
 
 window.mostrarHubNoticias = async function() {
-    console.log("DEBUG: Abrindo Hub de Notícias...");
+    console.log("HUB: Iniciando carregamento...");
     const hub = document.getElementById('noticias-hub');
     const container = document.getElementById('form-noticia-container');
     const btnVoltar = document.getElementById('btn-voltar-noticias-hub');
@@ -34,7 +34,6 @@ async function carregarListaNoticiasHub() {
     if (!container) return;
 
     try {
-        console.log("DEBUG: Carregando lista de notícias...");
         const umMesAtras = new Date();
         umMesAtras.setDate(umMesAtras.getDate() - 30);
 
@@ -64,42 +63,68 @@ async function carregarListaNoticiasHub() {
             const dataStr = dataOcorridoMeta ? new Date(dataOcorridoMeta + 'T12:00:00').toLocaleDateString('pt-BR') : new Date(n.criado_em).toLocaleDateString('pt-BR');
             
             const item = document.createElement('div');
-            item.className = 'flex justify-between items-center';
+            item.className = 'noticia-item-hub';
+            item.style.display = 'flex';
+            item.style.justifyContent = 'space-between';
+            item.style.alignItems = 'center';
             item.style.padding = '12px';
             item.style.background = '#f8fafc';
             item.style.borderRadius = '10px';
             item.style.border = '1px solid #e2e8f0';
+            item.style.marginBottom = '8px';
             
-            // Usando ID no botão para facilitar a delegação se necessário, mas mantendo onclick por compatibilidade rápida
             item.innerHTML = `
-                <div style="flex: 1; min-width: 0; pointer-events: none;">
+                <div style="flex: 1; min-width: 0;">
                     <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-blue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${n.titulo || 'Sem título'}</div>
                     <div style="font-size: 0.7rem; color: var(--text-muted);">📅 ${dataStr}</div>
                 </div>
-                <div class="flex gap-2" style="margin-left: 10px;">
-                    <button type="button" onclick="window.prepararEdicaoNoticia('${n.id}')" style="background:none; border:none; color:var(--primary-blue); font-size:1.1rem; cursor:pointer; padding:5px;" title="Editar">✏️</button>
-                    <button type="button" onclick="window.excluirNoticia('${n.id}')" style="background:none; border:none; color:var(--primary-red); font-size:1.1rem; cursor:pointer; padding:5px;" title="Excluir">🗑️</button>
+                <div class="flex gap-2">
+                    <button type="button" class="btn-edit" data-id="${n.id}" style="background:none; border:none; color:var(--primary-blue); font-size:1.2rem; cursor:pointer; padding:8px;">✏️</button>
+                    <button type="button" class="btn-delete" data-id="${n.id}" style="background:none; border:none; color:var(--primary-red); font-size:1.2rem; cursor:pointer; padding:8px;">🗑️</button>
                 </div>
             `;
+            
+            // Event Listeners Diretos (Mais robusto que onclick string)
+            const bEdit = item.querySelector('.btn-edit');
+            const bDel = item.querySelector('.btn-delete');
+            
+            bEdit.onclick = () => window.prepararEdicaoNoticia(n.id);
+            bDel.onclick = () => window.excluirNoticia(n.id);
+
             container.appendChild(item);
         });
 
     } catch (e) {
-        console.error("DEBUG: Erro ao carregar lista:", e);
-        container.innerHTML = '<p style="color: var(--primary-red); font-size: 0.8rem; text-align: center;">Erro ao carregar histórico.</p>';
+        console.error("Erro no Hub:", e);
+        container.innerHTML = '<p style="color: var(--primary-red); font-size: 0.8rem; text-align: center;">Erro ao carregar lista.</p>';
     }
 }
 
 window.prepararEdicaoNoticia = function(id) {
-    console.log("DEBUG: Preparando edição para ID:", id);
+    console.log("Editando:", id);
     const noticia = listaNoticiasCache.find(n => n.id == id);
-    if (!noticia) {
-        console.error("DEBUG: Notícia não encontrada no cache para ID:", id);
-        return;
-    }
-
+    if (!noticia) return;
     window.noticiaParaEditarCache = noticia;
     prepararFormNoticia('edit_specific');
+};
+
+window.excluirNoticia = async function(id) {
+    console.log("Excluindo:", id);
+    if (!confirm("Confirmar exclusão permanente desta notícia?")) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('aconteceu_go')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+        alert("Notícia removida!");
+        await carregarListaNoticiasHub();
+        if (window.carregarDashboard) window.carregarDashboard();
+    } catch (e) {
+        alert("Erro ao excluir. Tente novamente.");
+    }
 };
 
 window.prepararFormNoticia = function(modo) {
@@ -163,28 +188,6 @@ window.prepararFormNoticia = function(modo) {
     } catch(err) {
         console.error(err);
         alert("Erro ao abrir o editor.");
-    }
-};
-
-window.excluirNoticia = async function(id) {
-    console.log("DEBUG: Solicitando exclusão da notícia ID:", id);
-    if (!confirm("Tem certeza que deseja excluir esta notícia permanentemente?")) return;
-
-    try {
-        const { error } = await supabaseClient
-            .from('aconteceu_go')
-            .delete()
-            .eq('id', id);
-
-        if (error) throw error;
-        console.log("DEBUG: Notícia excluída com sucesso!");
-        alert("Notícia excluída!");
-        
-        await carregarListaNoticiasHub();
-        if (window.carregarDashboard) window.carregarDashboard();
-    } catch (e) {
-        console.error("DEBUG: Erro na exclusão:", e);
-        alert("Erro ao excluir. Tente novamente.");
     }
 };
 
