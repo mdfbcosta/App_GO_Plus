@@ -128,7 +128,8 @@ async function carregarPerfilUsuario(user) {
                     'Eventos': p.eventos,
                     'Escala': p.escala,
                     'Tesouraria': p.tesouraria,
-                    'Resumo': p.resumo
+                    'Resumo': p.resumo,
+                    'Gerenciar Notícias': (window.meuCargo && (window.meuCargo.includes('Núcleo') || window.meuCargo.includes('Coordenador'))) ? 'total' : 'nenhum'
                 };
 
                 const sidebarItems = document.querySelectorAll('.sidebar-item, .menu-mobile-item');
@@ -617,44 +618,63 @@ async function carregarAconteceu() {
             .select(`*, membros (nome, foto_url)`)
             .eq('grupo_id', window.meuGrupoId)
             .order('criado_em', { ascending: false })
-            .limit(5);
+            .limit(10);
 
         if (error) throw error;
 
-        const lista = document.getElementById('lista-aconteceu');
         const listaDesk = document.getElementById('desktop-lista-aconteceu');
-        
-        if (lista) lista.innerHTML = '';
         if (listaDesk) listaDesk.innerHTML = '';
 
         if (noticias.length === 0) {
             const empty = '<p style="font-size:0.8rem; color:var(--text-muted); text-align:center;">Nenhuma notícia recente.</p>';
-            if (lista) lista.innerHTML = empty;
             if (listaDesk) listaDesk.innerHTML = empty;
         } else {
             noticias.forEach(n => {
                 const dataStr = new Date(n.criado_em).toLocaleDateString('pt-BR');
-                const foto = n.membros?.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(n.membros?.nome || 'Admin')}&background=1E3A8A&color=fff`;
+                const fotoMembro = n.membros?.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(n.membros?.nome || 'U')}&background=1E3A8A&color=fff`;
+                
+                let fotosHtml = '';
+                let fotosArr = [];
+                try { fotosArr = typeof n.fotos === 'string' ? JSON.parse(n.fotos) : (n.fotos || []); } catch(e){}
+                
+                if (fotosArr.length > 0) {
+                    fotosHtml = `<div class="flex gap-1 overflow-x-auto" style="margin: 8px 0; padding-bottom: 5px;">
+                        ${fotosArr.map(f => `<img src="${f}" style="width:120px; height:80px; object-fit:cover; border-radius:6px; flex-shrink:0;">`).join('')}
+                    </div>`;
+                }
+
+                const reacoes = n.reacoes || [];
+                const userJaCurtiu = reacoes.some(r => r.membro_id === window.meuMembroId);
                 
                 const itemHtml = `
-                    <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border-left: 3px solid var(--primary-blue);">
-                        <div class="flex items-center gap-2" style="margin-bottom:5px;">
-                            <img src="${foto}" style="width:20px; height:20px; border-radius:50%; object-fit:cover;">
-                            <span style="font-size: 0.7rem; font-weight:600; color:var(--primary-blue);">${n.membros?.nome || 'GO+'}</span>
-                            <span style="font-size: 0.65rem; color:var(--text-muted);">${dataStr}</span>
+                    <div class="card-noticia" style="background: #fff; padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9; margin-bottom: 10px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-2">
+                                <img src="${fotoMembro}" style="width:18px; height:18px; border-radius:50%; object-fit:cover;">
+                                <div class="flex flex-col">
+                                    <span style="font-size: 0.65rem; font-weight:700; color:var(--primary-blue);">${n.membros?.nome || 'GO+'}</span>
+                                    <span style="font-size: 0.55rem; color:var(--text-muted);">${dataStr}</span>
+                                </div>
+                            </div>
                         </div>
-                        <p style="font-size: 0.8rem; line-height:1.4; color:var(--text-main);">${n.texto}</p>
+
+                        <div style="margin-top: 10px;">
+                            ${n.titulo ? `<h4 style="font-size: 0.85rem; font-weight:800; color: #1e293b; margin-bottom: 4px;">${n.titulo}</h4>` : ''}
+                            <p style="font-size: 0.8rem; line-height:1.5; color:#475569;">${n.texto}</p>
+                        </div>
+
+                        ${fotosHtml}
+
+                        <div class="flex justify-between items-center" style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #f8fafc;">
+                            <button onclick="reagirNoticia('${n.id}')" style="background:none; border:none; display:flex; align-items:center; gap:5px; cursor:pointer; color: ${userJaCurtiu ? '#ef4444' : '#64748b'};">
+                                <span id="noticia-like-icon-${n.id}" style="font-size: 1.1rem;">${userJaCurtiu ? '❤️' : '🤍'}</span>
+                                <span id="noticia-like-count-${n.id}" style="font-size: 0.75rem; font-weight:600;">${reacoes.length}</span>
+                            </button>
+                        </div>
                     </div>
                 `;
-                if (lista) lista.innerHTML += itemHtml;
                 if (listaDesk) listaDesk.innerHTML += itemHtml;
             });
-        }
-
-        // Permissão para postar (Coordenador, Coord Ministério, Núcleo)
-        const btnAdd = document.getElementById('btn-add-aconteceu') || document.getElementById('desktop-btn-add-aconteceu');
-        if (btnAdd && ['Coordenador', 'Núcleo', 'Coord. Ministério'].includes(window.meuCargo)) {
-            btnAdd.style.display = 'block';
         }
 
     } catch (e) {
@@ -773,6 +793,10 @@ function configurarNavegacao() {
                 alternarView('view-relatorios');
                 if (typeof carregarRelatorios === 'function') carregarRelatorios();
             }
+            else if (label.includes('Gerenciar Notícias')) {
+                alternarView('view-gerenciar-noticias');
+                if (typeof mostrarHubNoticias === 'function') mostrarHubNoticias();
+            }
             
             // Marca ativo
             if (!label.includes('Sair')) {
@@ -833,7 +857,8 @@ window.alternarView = function(viewId) {
             'view-ata': ['Reunião de Núcleo'],
             'view-resumo-go': ['Resumo do GO'],
             'view-tesouraria': ['Tesouraria'],
-            'view-relatorios': ['Relatórios']
+            'view-relatorios': ['Relatórios'],
+            'view-gerenciar-noticias': ['Gerenciar Notícias']
         };
         const activeLabels = menuLabels[viewId] || [];
 
