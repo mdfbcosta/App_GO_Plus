@@ -161,7 +161,11 @@ window.carregarEventos = async function(mesIndex, eventoIdParaFocar = null) {
             card.className = 'card';
             card.style.cssText = 'margin-bottom: 15px; overflow: hidden; padding: 0; transition: all 0.5s ease;';
             
-            let imgHtml = meta.foto ? `<img src="${meta.foto}" style="width:100%; height:180px; object-fit:cover; border-bottom:1px solid #eee;">` : '';
+            let imgHtml = meta.foto ? `
+                <div style="background: #f1f5f9; width:100%; display:flex; justify-content:center; align-items:center;">
+                    <img src="${meta.foto}" style="width:100%; max-height:350px; object-fit:contain; display:block;">
+                </div>
+            ` : '';
             let dataStr = dIni.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
             if (dFim) dataStr += ` até ${dFim.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'})}`;
 
@@ -327,7 +331,10 @@ window.prepararEdicaoEvento = async function(id) {
         }
         
         document.getElementById('modal-evento').style.display = 'flex';
-    } catch (err) { alert("Erro ao carregar: " + err.message); }
+    } catch (err) { 
+        if (window.showToast) window.showToast("Erro ao carregar evento.");
+        else alert("Erro ao carregar: " + err.message); 
+    }
 };
 
 async function salvarEvento(e) {
@@ -359,11 +366,11 @@ async function salvarEvento(e) {
         if (eventoModo === 'edit' && eventoIdEmEdicao) {
             const { error } = await supabaseClient.from('eventos').update(dados).eq('id', eventoIdEmEdicao);
             if (error) throw error;
-            alert("Evento atualizado!");
+            window.showToast("Evento atualizado! ✨");
         } else {
             const { error } = await supabaseClient.from('eventos').insert([dados]);
             if (error) throw error;
-            alert("Evento criado com sucesso!");
+            window.showToast("Evento criado com sucesso! 🔥");
             
             // Limpa rascunho se foi salvo
             let drafts = JSON.parse(localStorage.getItem('go_plus_eventos_drafts') || '[]');
@@ -378,17 +385,22 @@ async function salvarEvento(e) {
         carregarMesesTabs(mesParaRecarregar);
     } catch (err) { 
         console.error("Erro no salvamento:", err);
-        alert("Erro ao salvar: " + (err.message || "Verifique as colunas") + "\n\nDetectado: " + COLUNA_DATA_DETECTADA); 
+        window.showToast("Erro ao salvar dados.");
     } finally { btn.disabled = false; }
 }
 
 window.excluirEvento = async function(id) {
-    if (!confirm("Excluir este evento?")) return;
+    const confirmar = await window.confirmarAcao("Excluir Evento", "Tem certeza que deseja apagar este evento permanentemente?", "🗑️");
+    if (!confirmar) return;
+    
     try {
         const { error } = await supabaseClient.from('eventos').delete().eq('id', id);
         if (error) throw error;
+        window.showToast("Evento removido com sucesso.");
         carregarMesesTabs(mesAtivoEventos);
-    } catch (err) { alert("Erro ao excluir."); }
+    } catch (err) { 
+        window.showToast("Erro ao excluir.");
+    }
 };
 
 window.fecharModalEvento = function() { document.getElementById('modal-evento').style.display = 'none'; };

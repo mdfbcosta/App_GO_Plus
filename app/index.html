@@ -1557,6 +1557,19 @@
                 </div>
             </div>
         </div>
+        <!-- Modal: Confirmação Customizada -->
+        <div id="modal-confirm" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:3000; justify-content:center; align-items:center; backdrop-filter: blur(4px);">
+            <div class="card" style="width: 90%; max-width: 350px; padding: 25px; text-align: center;">
+                <div id="confirm-icon" style="font-size: 3rem; margin-bottom: 15px;">⚠️</div>
+                <h3 id="confirm-title" style="color: var(--primary-blue); margin-bottom: 10px;">Confirmar</h3>
+                <p id="confirm-text" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5;">Tem certeza que deseja realizar esta ação?</p>
+                <div class="flex gap-2">
+                    <button id="btn-confirm-cancel" class="btn btn-outline" style="flex:1; padding: 10px;">Cancelar</button>
+                    <button id="btn-confirm-yes" class="btn btn-primary" style="flex:1; padding: 10px; background: var(--primary-red);">Confirmar</button>
+                </div>
+            </div>
+        </div>
+
         <div id="go-toast">Link copiado!</div>
 
         <!-- Modal: Lista de Rascunhos -->
