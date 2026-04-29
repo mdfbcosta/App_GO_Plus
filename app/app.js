@@ -529,9 +529,9 @@ window.carregarAconteceu = async function() {
             const userJaCurtiu = reacoes.some(r => r.membro_id === window.meuMembroId);
             
             html += `
-            <div class="insta-post" style="scroll-snap-align: start; min-height: 480px; display: flex; flex-direction: column; background: #fff; border-bottom: 8px solid #f8fafc;">
+            <div class="insta-post" style="scroll-snap-align: start; flex: 0 0 520px; height: 520px; display: flex; flex-direction: column; background: #fff; border-bottom: 1px solid #eee;">
                 <!-- Header -->
-                <div class="flex items-center gap-3" style="padding: 12px;">
+                <div class="flex items-center gap-3" style="padding: 12px; flex-shrink: 0;">
                     <img src="${fotoMembro}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border: 1px solid #dbdbdb;">
                     <div class="flex flex-col">
                         <span style="font-size: 0.85rem; font-weight:700; color:#262626;">${n.membros?.nome || 'GO+'}</span>
@@ -540,7 +540,7 @@ window.carregarAconteceu = async function() {
                 </div>
 
                 <!-- Media Section (Carousel Clean) -->
-                <div style="position: relative; width: 100%; aspect-ratio: 1/1; background: #fafafa; overflow: hidden;">
+                <div style="position: relative; width: 100%; aspect-ratio: 1/1; background: #fafafa; overflow: hidden; flex-shrink: 0;">
                     ${fotosArr.length > 0 ? `
                         <div id="carousel-${n.id}" class="hide-scrollbar" onscroll="window.handleCarouselScroll('${n.id}', ${fotosArr.length})" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100%; height: 100%; scroll-behavior: smooth;">
                             ${fotosArr.map(f => `
@@ -571,31 +571,30 @@ window.carregarAconteceu = async function() {
                 </div>
 
                 <!-- Actions & Caption -->
-                <div style="padding: 12px 12px 15px 12px; background: white;">
-                    <div class="flex items-center gap-3" style="margin-bottom: 8px;">
+                <div style="padding: 10px 12px; background: white; flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                    <div class="flex items-center gap-3" style="margin-bottom: 6px; flex-shrink: 0;">
                         <button onclick="window.reagirNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; gap:5px;">
-                            <span id="noticia-like-icon-${n.id}" style="font-size: 1.4rem; color: ${userJaCurtiu ? '#ed4956' : '#262626'}">${userJaCurtiu ? '❤️' : '🤍'}</span>
+                            <span id="noticia-like-icon-${n.id}" style="font-size: 1.3rem; color: ${userJaCurtiu ? '#ed4956' : '#262626'}">${userJaCurtiu ? '❤️' : '🤍'}</span>
                             <span id="noticia-like-count-${n.id}" style="font-size: 0.85rem; font-weight: 700; color: #262626;">${reacoes.length}</span>
                         </button>
-                        <button onclick="window.compartilharNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; margin-left: 8px;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                        <button onclick="window.compartilharNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; margin-left: 5px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
                         </button>
                     </div>
 
-                    <div style="font-size: 0.85rem; line-height: 1.45; color: #262626;">
+                    <div style="font-size: 0.85rem; line-height: 1.4; color: #262626; overflow: hidden;">
                         <div id="noticia-texto-${n.id}" style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;">
-                            ${n.titulo ? `<strong style="display:block; margin-bottom:2px;">${n.titulo}</strong>` : ''}${n.texto}
+                            ${n.titulo ? `<strong style="display:block; margin-bottom:2px; font-size: 0.95rem; color: #1e293b;">${n.titulo}</strong>` : ''}${n.texto}
                         </div>
-                        ${n.texto.length > 100 ? `<span id="btn-mais-${n.id}" onclick="window.expandirNoticia('${n.id}')" style="color: #8e8e8e; cursor: pointer; font-weight:600; font-size:0.8rem;">... mais</span>` : ''}
+                        ${n.texto.length > 80 ? `<span id="btn-mais-${n.id}" onclick="window.expandirNoticia('${n.id}')" style="color: #8e8e8e; cursor: pointer; font-weight:600; font-size:0.75rem;">... mais</span>` : ''}
                     </div>
                 </div>
             </div>
             `;
         });
 
-        const finalHtml = `<div class="hide-scrollbar" style="height: 100%; overflow-y: auto; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; scroll-behavior: smooth;">${html}</div>`;
-        if (container) container.innerHTML = finalHtml;
-        if (listaDesk) listaDesk.innerHTML = finalHtml;
+        if (container) container.innerHTML = html;
+        if (listaDesk) listaDesk.innerHTML = html;
 
     } catch (err) {
         console.error("Erro ao carregar noticias:", err);
