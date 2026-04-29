@@ -437,11 +437,17 @@ window.clickMenuMobile = function(viewId) {
     alternarView(viewId); // Muda a view
 };
 
-// ==========================================
-// MÓDULO: DASHBOARD E NAVEGAÇÃO CENTRAL
-// ==========================================
+// Gerenciador de Scroll do Carrossel (Pontinhos)
+window.handleCarouselScroll = function(id, dotsCount) {
+    const el = document.getElementById(`carousel-${id}`);
+    if (!el) return;
+    const index = Math.round(el.scrollLeft / el.offsetWidth);
+    for (let i = 0; i < dotsCount; i++) {
+        const dot = document.getElementById(`dot-${id}-${i}`);
+        if (dot) dot.classList.toggle('active', i === index);
+    }
+};
 
-// Global state para notícias
 window.expandirNoticia = function(id) {
     const txt = document.getElementById(`noticia-texto-${id}`);
     const btn = document.getElementById(`btn-mais-${id}`);
@@ -465,19 +471,14 @@ window.compartilharNoticia = function(id) {
     }
 };
 
-// Delegated Listener Global para Excluir Notícia (Resolução definitiva)
+// Delegated Listener Global para Excluir Notícia
 document.addEventListener('click', (e) => {
-    // Procura por qualquer elemento que tenha a classe btn-delete-noticia ou esteja dentro de um
     const btnDel = e.target.closest('.btn-delete-noticia');
     if (btnDel) {
         const id = btnDel.getAttribute('data-id');
-        console.log("Global Catch: Excluindo notícia ID", id);
         if (typeof window.excluirNoticia === 'function') {
             e.preventDefault();
-            e.stopPropagation();
             window.excluirNoticia(id);
-        } else {
-            console.error("Módulo de notícias não carregado.");
         }
     }
 });
@@ -486,7 +487,7 @@ document.addEventListener('click', (e) => {
 // MÓDULO: NOTÍCIAS (MURAL)
 // ==========================================
 window.carregarAconteceu = async function() {
-    console.log("Iniciando Feed de Notícias...");
+    console.log("Iniciando Feed de Notícias UX 3.0...");
     try {
         const { data, error } = await supabaseClient
             .from('aconteceu_go')
@@ -528,20 +529,20 @@ window.carregarAconteceu = async function() {
             const userJaCurtiu = reacoes.some(r => r.membro_id === window.meuMembroId);
             
             html += `
-            <div class="insta-post" style="scroll-snap-align: start; min-height: 450px; display: flex; flex-direction: column; background: #fff; border-bottom: 8px solid #f1f5f9;">
+            <div class="insta-post" style="scroll-snap-align: start; min-height: 480px; display: flex; flex-direction: column; background: #fff; border-bottom: 8px solid #f8fafc;">
                 <!-- Header -->
                 <div class="flex items-center gap-3" style="padding: 12px;">
-                    <img src="${fotoMembro}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border: 1px solid #dbdbdb;">
+                    <img src="${fotoMembro}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border: 1px solid #dbdbdb;">
                     <div class="flex flex-col">
                         <span style="font-size: 0.85rem; font-weight:700; color:#262626;">${n.membros?.nome || 'GO+'}</span>
                         <span style="font-size: 0.65rem; color:#8e8e8e;">Publicada em ${dataPub}</span>
                     </div>
                 </div>
 
-                <!-- Media Section (Carousel) -->
+                <!-- Media Section (Carousel Clean) -->
                 <div style="position: relative; width: 100%; aspect-ratio: 1/1; background: #fafafa; overflow: hidden;">
                     ${fotosArr.length > 0 ? `
-                        <div id="carousel-${n.id}" class="hide-scrollbar" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100%; height: 100%;">
+                        <div id="carousel-${n.id}" class="hide-scrollbar" onscroll="window.handleCarouselScroll('${n.id}', ${fotosArr.length})" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100%; height: 100%; scroll-behavior: smooth;">
                             ${fotosArr.map(f => `
                                 <div style="flex: 0 0 100%; width: 100%; height: 100%; scroll-snap-align: start;">
                                     <img src="${f}" style="width:100%; height:100%; object-fit:cover;">
@@ -549,49 +550,55 @@ window.carregarAconteceu = async function() {
                             `).join('')}
                         </div>
                         
-                        <!-- Selo de Data -->
-                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; z-index: 10;">
+                        <!-- Selo de Data (Minimalista) -->
+                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.6rem; font-weight: 600; z-index: 10; backdrop-filter: blur(4px);">
                             Aconteceu em ${dataOcorridoStr}
                         </div>
 
-                        <!-- Setas de Navegação (se houver mais de uma foto) -->
+                        <!-- Setas (Desktop Only via CSS class) -->
                         ${fotosArr.length > 1 ? `
-                            <button onclick="document.getElementById('carousel-${n.id}').scrollBy({left: -300, behavior: 'smooth'})" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.7); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #262626;">&lt;</button>
-                            <button onclick="document.getElementById('carousel-${n.id}').scrollBy({left: 300, behavior: 'smooth'})" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.7); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #262626;">&gt;</button>
+                            <button class="carousel-arrow" onclick="document.getElementById('carousel-${n.id}').scrollBy({left: -document.getElementById('carousel-${n.id}').offsetWidth, behavior: 'smooth'})" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; z-index: 11; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">&lt;</button>
+                            <button class="carousel-arrow" onclick="document.getElementById('carousel-${n.id}').scrollBy({left: document.getElementById('carousel-${n.id}').offsetWidth, behavior: 'smooth'})" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; z-index: 11; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">&gt;</button>
+                            
+                            <!-- Dots Indicators -->
+                            <div style="position: absolute; bottom: 10px; left: 0; width: 100%; display: flex; justify-content: center; gap: 4px; z-index: 12;">
+                                ${fotosArr.map((_, i) => `<div id="dot-${n.id}-${i}" class="insta-dot ${i === 0 ? 'active' : ''}"></div>`).join('')}
+                            </div>
                         ` : ''}
                     ` : `
                         <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#ccc; font-size:2rem;">🖼️</div>
                     `}
                 </div>
 
-                <!-- Actions Bar -->
-                <div class="flex items-center gap-3" style="padding: 12px 12px 8px 12px;">
-                    <button onclick="window.reagirNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; gap:6px;">
-                        <span id="noticia-like-icon-${n.id}" style="font-size: 1.5rem; color: ${userJaCurtiu ? '#ed4956' : '#262626'}">${userJaCurtiu ? '❤️' : '🤍'}</span>
-                        <span id="noticia-like-count-${n.id}" style="font-size: 0.9rem; font-weight: 700; color: #262626;">${reacoes.length}</span>
-                    </button>
-                    <button onclick="window.compartilharNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; margin-left: 10px;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                    </button>
-                </div>
+                <!-- Actions & Caption -->
+                <div style="padding: 12px 12px 15px 12px; background: white;">
+                    <div class="flex items-center gap-3" style="margin-bottom: 8px;">
+                        <button onclick="window.reagirNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; gap:5px;">
+                            <span id="noticia-like-icon-${n.id}" style="font-size: 1.4rem; color: ${userJaCurtiu ? '#ed4956' : '#262626'}">${userJaCurtiu ? '❤️' : '🤍'}</span>
+                            <span id="noticia-like-count-${n.id}" style="font-size: 0.85rem; font-weight: 700; color: #262626;">${reacoes.length}</span>
+                        </button>
+                        <button onclick="window.compartilharNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; margin-left: 8px;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                        </button>
+                    </div>
 
-                <!-- Caption -->
-                <div style="padding: 0 12px 15px 12px; font-size: 0.9rem; line-height: 1.4; color: #262626;">
-                    <span id="noticia-texto-${n.id}" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                        ${n.titulo ? `<strong>${n.titulo}</strong><br>` : ''}${n.texto}
-                    </span>
-                    ${n.texto.length > 100 ? `<span id="btn-mais-${n.id}" onclick="window.expandirNoticia('${n.id}')" style="color: #8e8e8e; cursor: pointer; margin-left: 5px; font-weight:600;">... mais</span>` : ''}
+                    <div style="font-size: 0.85rem; line-height: 1.45; color: #262626;">
+                        <div id="noticia-texto-${n.id}" style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;">
+                            ${n.titulo ? `<strong style="display:block; margin-bottom:2px;">${n.titulo}</strong>` : ''}${n.texto}
+                        </div>
+                        ${n.texto.length > 100 ? `<span id="btn-mais-${n.id}" onclick="window.expandirNoticia('${n.id}')" style="color: #8e8e8e; cursor: pointer; font-weight:600; font-size:0.8rem;">... mais</span>` : ''}
+                    </div>
                 </div>
             </div>
             `;
         });
 
-        const finalHtml = `<div style="height: 100%; overflow-y: auto; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch;">${html}</div>`;
+        const finalHtml = `<div class="hide-scrollbar" style="height: 100%; overflow-y: auto; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; scroll-behavior: smooth;">${html}</div>`;
         if (container) container.innerHTML = finalHtml;
         if (listaDesk) listaDesk.innerHTML = finalHtml;
 
     } catch (err) {
-        console.error("Erro ao carregar aconteceu:", err);
+        console.error("Erro ao carregar noticias:", err);
     }
 };
 

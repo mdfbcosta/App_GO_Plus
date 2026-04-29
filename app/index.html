@@ -27,6 +27,26 @@
         }
         #lista-pedidos::-webkit-scrollbar { width: 5px; }
         #lista-pedidos::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        /* Estilos Instagram UX */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .insta-dot {
+            width: 6px;
+            height: 6px;
+            background: #dbdbdb;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        .insta-dot.active {
+            background: var(--primary-blue);
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .carousel-arrow { display: none !important; }
+        }
     </style>
 </head>
 <body>
