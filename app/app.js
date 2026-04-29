@@ -538,13 +538,27 @@ window.carregarAconteceu = async function() {
                     </div>
                 </div>
 
-                <!-- Media Section -->
+                <!-- Media Section (Carousel) -->
                 <div style="position: relative; width: 100%; aspect-ratio: 1/1; background: #fafafa; overflow: hidden;">
                     ${fotosArr.length > 0 ? `
-                        <img src="${fotosArr[0]}" style="width:100%; height:100%; object-fit:cover;">
-                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 600;">
+                        <div id="carousel-${n.id}" class="hide-scrollbar" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100%; height: 100%;">
+                            ${fotosArr.map(f => `
+                                <div style="flex: 0 0 100%; width: 100%; height: 100%; scroll-snap-align: start;">
+                                    <img src="${f}" style="width:100%; height:100%; object-fit:cover;">
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <!-- Selo de Data -->
+                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; z-index: 10;">
                             Aconteceu em ${dataOcorridoStr}
                         </div>
+
+                        <!-- Setas de Navegação (se houver mais de uma foto) -->
+                        ${fotosArr.length > 1 ? `
+                            <button onclick="document.getElementById('carousel-${n.id}').scrollBy({left: -300, behavior: 'smooth'})" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.7); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #262626;">&lt;</button>
+                            <button onclick="document.getElementById('carousel-${n.id}').scrollBy({left: 300, behavior: 'smooth'})" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.7); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #262626;">&gt;</button>
+                        ` : ''}
                     ` : `
                         <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#ccc; font-size:2rem;">🖼️</div>
                     `}
