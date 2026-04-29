@@ -26,7 +26,7 @@ async function carregarPedidos() {
             .from('pedidos_oracao')
             .select(`
                 *,
-                membros (nome)
+                membros (nome, telefone)
             `)
             .eq('grupo_id', window.meuGrupoId)
             .order('criado_em', { ascending: false });
@@ -37,10 +37,14 @@ async function carregarPedidos() {
 
         const { data: pedidos, error } = await query;
 
-        if (error) throw error;
-
         const lista = document.getElementById('lista-pedidos');
         if (!lista) return;
+
+        if (error) {
+            console.error("Erro Supabase:", error);
+            lista.innerHTML = `<p style="color:red; text-align:center; font-size:0.8rem;">Erro ao carregar dados: ${error.message}</p>`;
+            return;
+        }
 
         lista.innerHTML = '';
 
@@ -53,8 +57,8 @@ async function carregarPedidos() {
             const dataP = new Date(p.criado_em);
             const dataStr = `${dataP.getDate().toString().padStart(2, '0')}/${(dataP.getMonth() + 1).toString().padStart(2, '0')}/${dataP.getFullYear()}`;
             
-            // Dados de contato (reaproveitando lógica de pessoas.js)
-            const telBruto = p.membros?.telefone ? p.membros.telefone.replace(/\D/g, '') : '';
+            // Dados de contato
+            const telBruto = p.membros?.telefone ? String(p.membros.telefone).replace(/\D/g, '') : '';
             const linkZap = telBruto ? `https://api.whatsapp.com/send?phone=55${telBruto}` : '#';
             const linkTel = telBruto ? `tel:+55${telBruto}` : '#';
             const telExibicao = p.membros?.telefone || 'Sem número';
@@ -63,8 +67,10 @@ async function carregarPedidos() {
             div.className = 'card';
             div.style.padding = '15px';
             div.style.position = 'relative';
+            div.style.marginBottom = '10px';
             
-            const ehIntercessao = window.meuCargo && (window.meuCargo.includes('Intercessão') || window.meuCargo.includes('Coordenador'));
+            const cargoAtual = window.meuCargo || '';
+            const ehIntercessao = cargoAtual.includes('Intercessão') || cargoAtual.includes('Coordenador') || cargoAtual.includes('Núcleo');
 
             div.innerHTML = `
                 <div class="flex justify-between items-start" style="margin-bottom: 12px;">
@@ -103,8 +109,8 @@ async function carregarPedidos() {
                 ${p.resposta ? `
                     <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 8px; margin-top: 10px;">
                         <div style="font-size: 0.65rem; color: #166534; font-weight: 800; text-transform: uppercase; margin-bottom: 4px;">Resposta da Intercessão:</div>
-                        <p style="font-size: 0.85rem; color: #166534; margin: 0;">${p.resposta}</p>
-                        ${p.reacao ? `<div style="margin-top: 5px; font-size: 1rem;">${p.reacao}</div>` : ''}
+                        <p style="font-size: 0.85rem; color: #166534; margin: 0; line-height: 1.4;">${p.resposta}</p>
+                        ${p.reacao ? `<div style="margin-top: 5px; font-size: 1.2rem;">${p.reacao}</div>` : ''}
                     </div>
                 ` : (ehIntercessao ? `
                     <div style="margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 12px;">
@@ -116,7 +122,7 @@ async function carregarPedidos() {
             lista.appendChild(div);
         });
 
-        // Fechar popovers ao clicar fora (caso não esteja no pessoas.js)
+        // Fechar popovers ao clicar fora
         if (!window.hasPedidoClickEvent) {
             window.addEventListener('click', (e) => {
                 if (!e.target.closest('.contato-popover') && !e.target.closest('.btn-contato')) {
@@ -127,7 +133,9 @@ async function carregarPedidos() {
         }
 
     } catch (err) {
-        console.error("Erro ao carregar pedidos:", err);
+        console.error("Erro fatal ao carregar pedidos:", err);
+        const lista = document.getElementById('lista-pedidos');
+        if (lista) lista.innerHTML = `<p style="color:red; text-align:center; font-size:0.8rem;">Erro interno no sistema.</p>`;
     }
 }
 
