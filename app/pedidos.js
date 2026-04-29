@@ -18,6 +18,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+window.filtroPedidos = 'pendentes'; // Padrão para intercessores
+
+window.setFiltroPedidos = function(filtro) {
+    window.filtroPedidos = filtro;
+    
+    // Atualiza visual das pills
+    const pills = document.querySelectorAll('#filtros-pedidos .pill');
+    pills.forEach(p => {
+        p.classList.remove('active');
+        if (p.innerText.toLowerCase().includes(filtro)) p.classList.add('active');
+    });
+    
+    carregarPedidos();
+}
+
 async function carregarPedidos() {
     if (!window.meuGrupoId) return;
 
@@ -46,14 +61,23 @@ async function carregarPedidos() {
             return;
         }
 
+        // --- FILTRAGEM EM MEMÓRIA ---
+        let pedidosFiltrados = pedidos;
+        if (window.filtroPedidos === 'pendentes') {
+            pedidosFiltrados = pedidos.filter(p => !p.resposta);
+        } else if (window.filtroPedidos === 'respondidos') {
+            pedidosFiltrados = pedidos.filter(p => p.resposta);
+        }
+
         lista.innerHTML = '';
 
-        if (pedidos.length === 0) {
-            lista.innerHTML = '<p style="font-size:0.85rem; color:var(--text-muted); text-align:center;">Nenhum pedido de oração.</p>';
+        if (pedidosFiltrados.length === 0) {
+            const msg = window.filtroPedidos === 'pendentes' ? 'Nenhum pedido pendente de resposta. Bom trabalho!' : 'Nenhum pedido encontrado para este filtro.';
+            lista.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted); text-align:center; margin-top: 20px;">${msg}</p>`;
             return;
         }
 
-        pedidos.forEach(p => {
+        pedidosFiltrados.forEach(p => {
             const dataP = new Date(p.criado_em);
             const dataStr = `${dataP.getDate().toString().padStart(2, '0')}/${(dataP.getMonth() + 1).toString().padStart(2, '0')}/${dataP.getFullYear()}`;
             
@@ -67,7 +91,8 @@ async function carregarPedidos() {
             div.className = 'card';
             div.style.padding = '15px';
             div.style.position = 'relative';
-            div.style.marginBottom = '10px';
+            div.style.marginBottom = '5px';
+            div.style.animation = 'fadeIn 0.3s ease';
             
             const cargoAtual = window.meuCargo || '';
             const ehIntercessao = cargoAtual.includes('Intercessão') || cargoAtual.includes('Coordenador') || cargoAtual.includes('Núcleo');
