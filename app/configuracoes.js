@@ -102,7 +102,7 @@ async function carregarConfiguracoes() {
         const listaMinisterios = ministeriosRCC.filter(m => !cargosExcluidos.includes(m));
 
         listaMinisterios.forEach(ministerio => {
-            const ocupante = membros.find(m => m.cargo === ministerio);
+            const ocupante = membros.find(m => m.cargo && m.cargo.split(', ').includes(ministerio));
             const val = ocupante ? ocupante.nome : '';
 
             const div = document.createElement('div');
@@ -130,7 +130,7 @@ async function carregarConfiguracoes() {
         // 1. Secretário e Tesoureiro
         const cargosFixosNuc = ["Secretário", "Tesoureiro"];
         cargosFixosNuc.forEach(cargo => {
-            const ocupante = membros.find(m => m.cargo === cargo);
+            const ocupante = membros.find(m => m.cargo && m.cargo.split(', ').includes(cargo));
             const val = ocupante ? ocupante.nome : '';
 
             const div = document.createElement('div');
@@ -150,7 +150,11 @@ async function carregarConfiguracoes() {
         });
 
         // 2. Lista automática de Coordenadores de Ministérios
-        const coordsAtuais = membros.filter(m => listaMinisterios.includes(m.cargo));
+        const coordsAtuais = membros.filter(m => {
+            if (!m.cargo) return false;
+            const userCargos = m.cargo.split(', ');
+            return userCargos.some(c => listaMinisterios.includes(c));
+        });
         if (coordsAtuais.length > 0) {
             const divInfo = document.createElement('div');
             divInfo.style.fontSize = '0.8rem';
