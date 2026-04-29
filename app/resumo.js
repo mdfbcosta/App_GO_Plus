@@ -22,7 +22,7 @@ const reacoesDisponiveis = [
 let longPressTimer;
 
 // --- COMPRESSÃO ---
-function comprimirImagem(base64, maxWidth = 500, maxHeight = 500, quality = 0.4) {
+window.comprimirImagem = function(base64, maxWidth = 500, maxHeight = 500, quality = 0.4) {
     return new Promise((resolve) => {
         const img = new Image(); img.src = base64;
         img.onload = () => {

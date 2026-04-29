@@ -12,7 +12,9 @@ window.mostrarHubNoticias = async function() {
     document.getElementById('noticias-hub').style.display = 'flex';
     document.getElementById('form-noticia-container').style.display = 'none';
     document.getElementById('btn-voltar-noticias-hub').style.display = 'none';
-    document.querySelector('.btn-form-noticia').style.display = 'none';
+    
+    const btnPub = document.getElementById('btn-publicar-noticia');
+    if (btnPub) btnPub.style.display = 'none';
 
     if (window.meuGrupoId) {
         const { data: ult } = await supabaseClient
@@ -36,7 +38,9 @@ window.prepararFormNoticia = function(modo) {
     document.getElementById('noticias-hub').style.display = 'none';
     document.getElementById('form-noticia-container').style.display = 'block';
     document.getElementById('btn-voltar-noticias-hub').style.display = 'block';
-    document.querySelector('.btn-form-noticia').style.display = 'block';
+    
+    const btnPub = document.getElementById('btn-publicar-noticia');
+    if (btnPub) btnPub.style.display = 'block';
 
     const form = document.getElementById('form-noticia');
     form.reset();
