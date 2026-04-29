@@ -110,7 +110,7 @@ async function carregarPerfilUsuario(user) {
             // Merge finalizado
                 
             // Fallback Participante
-            if (membro.cargo.includes('Participante')) {
+            if (membro.cargo && membro.cargo.includes('Participante')) {
                 const p = window.minhasPermissoes;
                 if (!p.resumo) p.resumo = 'nenhum';
                 if (!p.ata) p.ata = 'nenhum';
