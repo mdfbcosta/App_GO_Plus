@@ -36,7 +36,12 @@ window.carregarNotificacoes = async function() {
 
         if (reunioes) {
             reunioes.forEach(r => {
-                const dados = JSON.parse(r.resumo_pregacao || '{}');
+                let dados = {};
+                try {
+                    dados = JSON.parse(r.avisos_finais || '{}');
+                } catch(e) {
+                    console.error("Erro ao processar avisos_finais como JSON", e);
+                }
                 const dataReuniao = new Date(r.data_reuniao).toLocaleDateString('pt-BR');
                 
                 // Notificação: Nova Reunião Planejada
