@@ -152,7 +152,7 @@ async function carregarPerfilUsuario(user) {
                     }
                 });
 
-                carregarCoordenadorInfo();
+                await carregarCoordenadorInfo();
 
                 // RBAC Notícias
                 const btnPostarNoticia = document.getElementById('btn-add-aconteceu');
@@ -998,6 +998,22 @@ async function carregarMeusPedidos() {
     } catch (e) {
         console.error("Erro ao carregar meus pedidos:", e);
     }
+}
+
+async function carregarCoordenadorInfo() {
+    try {
+        const { data: coord } = await supabaseClient
+            .from('membros')
+            .select('nome')
+            .eq('grupo_id', window.meuGrupoId)
+            .eq('cargo', 'Coordenador')
+            .maybeSingle();
+            
+        if (coord) {
+            const el = document.getElementById('sidebar-coord-nome');
+            if (el) el.innerText = coord.nome;
+        }
+    } catch(e) { console.error(e); }
 }
 
 window.excluirPedido = async function(id) {
