@@ -6,6 +6,7 @@ let arteEventoBase64 = null;
 let eventoModo = 'novo'; 
 let eventoIdEmEdicao = null;
 let COLUNA_DATA_DETECTADA = 'data_evento'; // Valor padrão inicial
+let mesAtivoEventos = new Date().getMonth();
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Descobrir o nome correto da coluna antes de tudo
@@ -125,6 +126,7 @@ window.carregarMesesTabs = function(mesDesejado = null, eventoIdParaFocar = null
 
 window.carregarEventos = async function(mesIndex, eventoIdParaFocar = null) {
     if (!window.meuGrupoId) return;
+    mesAtivoEventos = mesIndex;
     const btnNovo = document.getElementById('btn-novo-evento');
     const temPermissao = (window.meuCargo && (window.meuCargo.includes('Coordenador') || window.meuCargo.includes('Secretário')));
     if (btnNovo) btnNovo.style.display = temPermissao ? 'block' : 'none';
@@ -369,7 +371,11 @@ async function salvarEvento(e) {
             localStorage.setItem('go_plus_eventos_drafts', JSON.stringify(drafts));
         }
         
-        fecharModalEvento(); carregarMesesTabs();
+        }
+        
+        const mesParaRecarregar = new Date(dataInput).getMonth();
+        fecharModalEvento(); 
+        carregarMesesTabs(mesParaRecarregar);
     } catch (err) { 
         console.error("Erro no salvamento:", err);
         alert("Erro ao salvar: " + (err.message || "Verifique as colunas") + "\n\nDetectado: " + COLUNA_DATA_DETECTADA); 
@@ -381,7 +387,7 @@ window.excluirEvento = async function(id) {
     try {
         const { error } = await supabaseClient.from('eventos').delete().eq('id', id);
         if (error) throw error;
-        carregarMesesTabs();
+        carregarMesesTabs(mesAtivoEventos);
     } catch (err) { alert("Erro ao excluir."); }
 };
 
