@@ -110,28 +110,27 @@ window.excluirNoticia = async function(id) {
     if (!confirmacao) return;
 
     try {
-        console.log("Chamando Supabase para deletar...");
-        const { error } = await supabaseClient
+        console.log("Chamando Supabase para deletar noticia:", id);
+        const { error, count } = await supabaseClient
             .from('aconteceu_go')
             .delete()
             .eq('id', id);
 
         if (error) {
-            console.error("Erro Supabase ao excluir:", error);
-            throw error;
+            console.error("Erro detalhado Supabase:", error);
+            throw new Error(error.message);
         }
 
-        console.log("Notícia excluída com sucesso do banco.");
+        console.log("Resposta Supabase - Deleção concluída.");
         alert("Notícia removida com sucesso!");
         
-        // Atualiza as listas
+        // Limpar cache local se necessário
+        listaNoticiasCache = listaNoticiasCache.filter(n => n.id !== id);
+
+        // Atualiza as listas na tela
         await carregarListaNoticiasHub();
-        if (window.carregarDashboard) {
-            await window.carregarDashboard();
-        }
-        if (window.carregarAconteceu) {
-            await window.carregarAconteceu();
-        }
+        if (window.carregarAconteceu) await window.carregarAconteceu();
+        if (window.carregarDashboard) await window.carregarDashboard();
         
     } catch (e) {
         console.error("Exceção capturada ao excluir:", e);
