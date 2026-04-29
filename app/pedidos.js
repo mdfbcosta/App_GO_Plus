@@ -53,27 +53,102 @@ async function carregarPedidos() {
             const dataP = new Date(p.criado_em);
             const dataStr = `${dataP.getDate().toString().padStart(2, '0')}/${(dataP.getMonth() + 1).toString().padStart(2, '0')}/${dataP.getFullYear()}`;
             
+            // Dados de contato (reaproveitando lógica de pessoas.js)
+            const telBruto = p.membros?.telefone ? p.membros.telefone.replace(/\D/g, '') : '';
+            const linkZap = telBruto ? `https://api.whatsapp.com/send?phone=55${telBruto}` : '#';
+            const linkTel = telBruto ? `tel:+55${telBruto}` : '#';
+            const telExibicao = p.membros?.telefone || 'Sem número';
+
             const div = document.createElement('div');
+            div.className = 'card';
             div.style.padding = '15px';
-            div.style.background = 'white';
-            div.style.borderRadius = 'var(--radius-md)';
-            div.style.border = '1px solid var(--border-color)';
+            div.style.position = 'relative';
             
+            const ehIntercessao = window.meuCargo && (window.meuCargo.includes('Intercessão') || window.meuCargo.includes('Coordenador'));
+
             div.innerHTML = `
-                <div class="flex gap-2 items-center" style="margin-bottom: 10px;">
-                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(p.membros?.nome || 'Usuário')}&background=facc15&color=fff" style="width:28px; border-radius:50%;">
-                    <div>
-                        <div style="font-size: 0.8rem; font-weight: 600;">${p.membros?.nome || 'Usuário'}</div>
-                        <div style="font-size: 0.7rem; color: var(--text-muted);">${dataStr}</div>
+                <div class="flex justify-between items-start" style="margin-bottom: 12px;">
+                    <div class="flex gap-2 items-center">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(p.membros?.nome || 'Usuário')}&background=facc15&color=fff" style="width:32px; height:32px; border-radius:50%;">
+                        <div>
+                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-blue);">${p.membros?.nome || 'Usuário'}</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">${dataStr}</div>
+                        </div>
                     </div>
+                    
+                    ${ehIntercessao ? `
+                    <div class="flex items-center gap-2">
+                        <div id="contato-info-${p.id}" class="contato-popover" style="display:none; position:absolute; right:50px; top:10px; background:white; border:1px solid #eee; padding:10px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,0.12); z-index:100; text-align:center; min-width: 120px;">
+                            <div style="font-size: 0.8rem; font-weight: 800; color: var(--primary-blue); margin-bottom: 8px;">${telExibicao}</div>
+                            <div class="flex gap-4 justify-center">
+                                ${telBruto ? `
+                                    <a href="${linkZap}" target="_blank" style="text-decoration:none;">
+                                        <img src="assets/icons/icon-whatsapp.png" style="width:28px; height:28px;">
+                                    </a>
+                                    <a href="${linkTel}" style="text-decoration:none;">
+                                        <div style="width:28px; height:28px; background:#f1f5f9; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem;">📞</div>
+                                    </a>
+                                ` : '<span style="font-size:0.6rem; color:#999;">Sem número</span>'}
+                            </div>
+                        </div>
+                        <button onclick="toggleContato('${p.id}', event)" class="btn-contato" style="background:#f8fafc; border:1px solid #e2e8f0; cursor:pointer; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                            <img src="assets/icons/icon-chat.png" style="width:18px; height:18px; opacity:0.8;">
+                        </button>
+                    </div>
+                    ` : ''}
                 </div>
-                <p style="font-size: 0.85rem; line-height: 1.4;">${p.texto}</p>
+                
+                <p style="font-size: 0.9rem; line-height: 1.5; color: #374151; margin-bottom: 15px; padding-left: 5px; border-left: 2px solid #f3f4f6;">${p.texto}</p>
+
+                ${p.resposta ? `
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 8px; margin-top: 10px;">
+                        <div style="font-size: 0.65rem; color: #166534; font-weight: 800; text-transform: uppercase; margin-bottom: 4px;">Resposta da Intercessão:</div>
+                        <p style="font-size: 0.85rem; color: #166534; margin: 0;">${p.resposta}</p>
+                        ${p.reacao ? `<div style="margin-top: 5px; font-size: 1rem;">${p.reacao}</div>` : ''}
+                    </div>
+                ` : (ehIntercessao ? `
+                    <div style="margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 12px;">
+                        <textarea id="resp-${p.id}" class="input-field" placeholder="Escreva uma palavra de fé..." rows="2" style="font-size: 0.8rem; margin-bottom: 8px;"></textarea>
+                        <button class="btn btn-primary" onclick="enviarRespostaPedido('${p.id}')" style="font-size: 0.75rem; padding: 6px 12px; width: auto;">Responder Pedido</button>
+                    </div>
+                ` : '')}
             `;
             lista.appendChild(div);
         });
 
+        // Fechar popovers ao clicar fora (caso não esteja no pessoas.js)
+        if (!window.hasPedidoClickEvent) {
+            window.addEventListener('click', (e) => {
+                if (!e.target.closest('.contato-popover') && !e.target.closest('.btn-contato')) {
+                    document.querySelectorAll('.contato-popover').forEach(p => p.style.display = 'none');
+                }
+            });
+            window.hasPedidoClickEvent = true;
+        }
+
     } catch (err) {
         console.error("Erro ao carregar pedidos:", err);
+    }
+}
+
+window.enviarRespostaPedido = async function(id) {
+    const texto = document.getElementById(`resp-${id}`).value;
+    if (!texto) return alert("Por favor, escreva uma resposta.");
+
+    try {
+        const { error } = await supabaseClient
+            .from('pedidos_oracao')
+            .update({ 
+                resposta: texto,
+                respondedor_id: window.meuMembroId 
+            })
+            .eq('id', id);
+
+        if (error) throw error;
+        carregarPedidos();
+    } catch (err) {
+        console.error("Erro ao responder pedido:", err);
+        alert("Erro ao enviar resposta.");
     }
 }
 

@@ -981,21 +981,56 @@ async function carregarMeusPedidos() {
             const div = document.createElement('div');
             div.className = 'card';
             div.style.borderLeft = '4px solid var(--primary-blue)';
-            div.style.marginBottom = '10px';
+            div.style.marginBottom = '12px';
             div.innerHTML = `
                 <div class="flex justify-between items-start" style="margin-bottom: 10px;">
-                    <span style="font-size: 0.7rem; color: var(--text-muted);">${data}</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${data}</span>
                     <div class="flex gap-2">
-                        <button onclick="editarPedido('${p.id}', '${p.texto.replace(/'/g, "\\'")}')" style="background:none; border:none; color:var(--primary-blue); font-size:0.7rem; cursor:pointer;">✏️ Editar</button>
-                        <button onclick="excluirPedido('${p.id}')" style="background:none; border:none; color:var(--primary-red); font-size:0.7rem; cursor:pointer;">🗑️ Excluir</button>
+                        <button onclick="editarPedido('${p.id}', '${p.texto.replace(/'/g, "\\'")}')" style="background:none; border:none; color:var(--primary-blue); font-size:0.75rem; cursor:pointer;">✏️ Editar</button>
+                        <button onclick="excluirPedido('${p.id}')" style="background:none; border:none; color:var(--primary-red); font-size:0.75rem; cursor:pointer;">🗑️ Excluir</button>
                     </div>
                 </div>
-                <p style="font-size: 0.9rem; color: var(--text-main); line-height: 1.5;">${p.texto}</p>
+                <p style="font-size: 0.95rem; color: var(--text-main); line-height: 1.5; margin-bottom: 10px;">${p.texto}</p>
+
+                ${p.resposta ? `
+                    <div style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px; border-radius: 8px; margin-top: 10px; position: relative;">
+                        <div style="font-size: 0.65rem; color: var(--primary-blue); font-weight: 800; text-transform: uppercase; margin-bottom: 5px;">Resposta Recebida:</div>
+                        <p style="font-size: 0.9rem; color: #334155; margin: 0; line-height: 1.4;">${p.resposta}</p>
+                        
+                        <div id="reacao-area-${p.id}" style="margin-top: 10px;">
+                            ${p.reacao ? `
+                                <span style="font-size: 1.2rem;">${p.reacao}</span>
+                            ` : `
+                                <button onclick="reagirPedido('${p.id}', '👍')" style="background: white; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; transition: all 0.2s;" onmouseover="this.style.border='1px solid var(--primary-blue)'">
+                                    <span>Marcar como lido</span> 👍
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                ` : ''}
             `;
             container.appendChild(div);
         });
     } catch (e) {
         console.error("Erro ao carregar meus pedidos:", e);
+    }
+}
+
+window.reagirPedido = async function(id, emoji) {
+    try {
+        const { error } = await supabaseClient
+            .from('pedidos_oracao')
+            .update({ reacao: emoji })
+            .eq('id', id);
+
+        if (error) throw error;
+        
+        // Feedback visual imediato
+        const area = document.getElementById(`reacao-area-${id}`);
+        if (area) area.innerHTML = `<span style="font-size: 1.2rem;">${emoji}</span>`;
+        
+    } catch (err) {
+        console.error("Erro ao reagir ao pedido:", err);
     }
 }
 
