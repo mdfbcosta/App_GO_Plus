@@ -789,7 +789,7 @@ function configurarNavegacao() {
 }
 
 // Função Global para trocar telas
-window.alternarView = function(viewId) {
+window.alternarView = function(viewId, ...args) {
     const views = document.querySelectorAll('.app-view');
     views.forEach(v => {
         v.style.display = 'none';
@@ -803,7 +803,7 @@ window.alternarView = function(viewId) {
         if (viewId === 'view-pedidos' && typeof carregarPedidos === 'function') carregarPedidos();
         if (viewId === 'view-meus-pedidos') carregarMeusPedidos();
         if (viewId === 'view-perfil' && typeof carregarPerfil === 'function') carregarPerfil();
-        if (viewId === 'view-eventos' && typeof carregarMesesTabs === 'function') carregarMesesTabs();
+        if (viewId === 'view-eventos' && typeof carregarMesesTabs === 'function') carregarMesesTabs(...args);
         if (viewId === 'view-configuracoes' && typeof carregarConfiguracoes === 'function') carregarConfiguracoes();
         if (viewId === 'view-ata' && typeof carregarAtas === 'function') carregarAtas();
 
@@ -1032,13 +1032,8 @@ async function carregarEventosHome() {
 }
 
 window.irParaEvento = function(mesIndex, eventoId) {
-    // Primeiro alternamos a view
-    alternarView('view-eventos');
-    
-    // Depois forçamos o carregamento do mês específico
-    if (typeof window.carregarMesesTabs === 'function') {
-        window.carregarMesesTabs(mesIndex, eventoId);
-    }
+    // Agora passamos os parâmetros diretamente na transição de view
+    window.alternarView('view-eventos', mesIndex, eventoId);
 }
 
 window.compartilharConvite = async function() {

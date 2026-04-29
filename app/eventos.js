@@ -7,6 +7,7 @@ let eventoModo = 'novo';
 let eventoIdEmEdicao = null;
 let COLUNA_DATA_DETECTADA = 'data_evento'; // Valor padrão inicial
 let mesAtivoEventos = new Date().getMonth();
+let discoveryDone = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Descobrir o nome correto da coluna antes de tudo
@@ -22,6 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function descobrirColunaData() {
+    if (discoveryDone) return;
     try {
         const { data, error } = await supabaseClient.from('eventos').select('*').limit(1);
         if (data && data.length > 0) {
@@ -30,6 +32,7 @@ async function descobrirColunaData() {
             // Procura por nomes comuns de data
             if (colunas.includes('data_evento')) COLUNA_DATA_DETECTADA = 'data_evento';
             else if (colunas.includes('data')) COLUNA_DATA_DETECTADA = 'data';
+            else if (colunas.includes('data_hora')) COLUNA_DATA_DETECTADA = 'data_hora';
             else if (colunas.includes('data_inicio')) COLUNA_DATA_DETECTADA = 'data_inicio';
             else if (colunas.includes('data_reuniao')) COLUNA_DATA_DETECTADA = 'data_reuniao';
             else {
@@ -37,6 +40,7 @@ async function descobrirColunaData() {
                 const detectada = colunas.find(c => c.toLowerCase().includes('data'));
                 if (detectada) COLUNA_DATA_DETECTADA = detectada;
             }
+            discoveryDone = true;
         }
     } catch (e) { console.error("Erro na descoberta de colunas:", e); }
 }
@@ -126,6 +130,7 @@ window.carregarMesesTabs = function(mesDesejado = null, eventoIdParaFocar = null
 
 window.carregarEventos = async function(mesIndex, eventoIdParaFocar = null) {
     if (!window.meuGrupoId) return;
+    await descobrirColunaData(); // Garante que a coluna foi detectada antes de buscar
     mesAtivoEventos = mesIndex;
     const btnNovo = document.getElementById('btn-novo-evento');
     const temPermissao = (window.meuCargo && (window.meuCargo.includes('Coordenador') || window.meuCargo.includes('Secretário')));
