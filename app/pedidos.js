@@ -26,7 +26,7 @@ async function carregarPedidos() {
             .from('pedidos_oracao')
             .select(`
                 *,
-                membros (nome, telefone)
+                membros!membro_id (nome, telefone)
             `)
             .eq('grupo_id', window.meuGrupoId)
             .order('criado_em', { ascending: false });
