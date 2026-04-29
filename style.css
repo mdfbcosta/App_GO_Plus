@@ -196,7 +196,7 @@ body {
     background: white;
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-lg);
-    z-index: 3000;
+    z-index: 10005; /* Garantir que fique acima do header */
     display: none;
     flex-direction: column;
     overflow: hidden;
@@ -473,11 +473,10 @@ body {
     justify-content: space-around;
     padding: 0.75rem 0;
     box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
-    z-index: 1000;
+    z-index: 10000; /* Sidebar mobile fica em 11000 */
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     cursor: pointer;
-    pointer-events: auto;
 }
 
 /* For mobile container specifically */

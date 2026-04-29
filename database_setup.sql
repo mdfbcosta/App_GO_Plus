@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS public.eventos (
     data_hora TIMESTAMP WITH TIME ZONE NOT NULL,
     descricao TEXT,
     local_evento TEXT,
+    visibilidade TEXT DEFAULT 'Público',
     criado_em TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
@@ -201,3 +202,5 @@ CREATE TABLE IF NOT EXISTS public.aconteceu_go (
 ALTER TABLE public.aconteceu_go ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Leitura Geral Aconteceu" ON public.aconteceu_go FOR SELECT USING (true);
 CREATE POLICY "Insert Aconteceu MVP" ON public.aconteceu_go FOR INSERT WITH CHECK (true);
+CREATE POLICY "Delete Aconteceu MVP" ON public.aconteceu_go FOR DELETE USING (true);
+CREATE POLICY "Update Aconteceu MVP" ON public.aconteceu_go FOR UPDATE USING (true);

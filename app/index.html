@@ -151,13 +151,13 @@
                 <span style="color: white; font-weight:800; font-size: 1.4rem;">GO</span>
                 <span id="mobile-grupo-nome" style="color: var(--primary-red); font-weight:800; font-size: 1.4rem;">Carregando...</span>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1">
                 <!-- Sininho Mobile -->
-                <div class="notification-container" onclick="toggleNotifications('mobile')">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                    <div id="notif-badge-mobile" class="notification-badge" style="display:none; border-color: var(--primary-blue);">0</div>
+                <div class="notification-container" onclick="toggleNotifications('mobile')" style="padding: 10px; cursor: pointer; position: relative;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <div id="notif-badge-mobile" class="notification-badge" style="display:none; border-color: var(--primary-blue); top: 5px; right: 5px;">0</div>
                     
-                    <div id="notif-panel-mobile" class="notification-panel" style="right: -60px; top: 55px;">
+                    <div id="notif-panel-mobile" class="notification-panel" style="right: 0; top: 55px; width: 280px; z-index: 10001;">
                         <div class="notification-header">
                             <span style="font-weight:700; color:var(--primary-blue);">Notificações</span>
                             <button onclick="marcarTodasLidas()" style="background:none; border:none; color:var(--text-muted); font-size:0.7rem; cursor:pointer;">Limpar</button>
@@ -168,8 +168,8 @@
                     </div>
                 </div>
 
-                <button style="background:none; border:none; color:white; cursor:pointer;" onclick="alternarView('view-perfil')">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                <button style="background:none; border:none; color:white; cursor:pointer; padding: 10px;" onclick="alternarView('view-perfil')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 </button>
             </div>
         </header>
@@ -190,10 +190,13 @@
         </nav>
 
         <!-- NOVO: Overlay de Menu Mobile -->
-        <div id="menu-mobile-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:2000; overflow-y:auto; padding: 20px;">
+        <div id="menu-mobile-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:11000; overflow-y:auto; padding: 20px; animation: slideInUp 0.3s ease-out;">
             <div class="flex justify-between items-center" style="margin-bottom: 30px;">
-                <div style="font-weight:800; color:var(--primary-blue); font-size:1.2rem;">MENU GO+</div>
-                <button onclick="toggleMenuMobile()" style="background:none; border:none; font-size:2rem; color:var(--primary-blue);">&times;</button>
+                <div style="font-weight:800; color:var(--primary-blue); font-size:1.2rem; display:flex; align-items:center; gap:10px;">
+                    <div style="width:4px; height:20px; background:var(--primary-red); border-radius:2px;"></div>
+                    MENU GO+
+                </div>
+                <button onclick="toggleMenuMobile()" style="background:#f1f5f9; border:none; width:40px; height:40px; border-radius:50%; font-size:1.5rem; color:var(--primary-blue); display:flex; align-items:center; justify-content:center; cursor:pointer;">&times;</button>
             </div>
             
             <div class="flex-col gap-4" id="mobile-menu-list">
@@ -208,6 +211,7 @@
                 <a href="#" class="menu-mobile-item" data-view="view-pedidos" onclick="clickMenuMobile('view-pedidos')">🙏 Pedidos de Oração</a>
                 <a href="#" id="menu-mobile-noticias" class="menu-mobile-item" data-view="view-gerenciar-noticias" onclick="clickMenuMobile('view-gerenciar-noticias')">📰 Gerenciar Notícias</a>
                 <a href="#" class="menu-mobile-item" data-view="view-relatorios" onclick="clickMenuMobile('view-relatorios')">📊 Relatórios</a>
+                <a href="#" id="menu-mobile-palavra" class="menu-mobile-item" data-view="view-gerenciar-palavra" onclick="clickMenuMobile('view-gerenciar-palavra')">📖 Palavra do Dia</a>
                 <a href="#" class="menu-mobile-item" data-view="view-configuracoes" onclick="clickMenuMobile('view-configuracoes')">⚙️ Configurações</a>
                 
                 <hr style="border:none; border-top: 1px solid #eee; margin: 10px 0;">
@@ -241,6 +245,7 @@
                 <a href="#" class="sidebar-item" data-view="view-pedidos" onclick="alternarView('view-pedidos')">🙏 Pedidos de Oração</a>
                 <a href="#" id="sidebar-item-noticias" class="sidebar-item" data-view="view-gerenciar-noticias" onclick="alternarView('view-gerenciar-noticias')">📰 Gerenciar Notícias</a>
                 <a href="#" class="sidebar-item" data-view="view-relatorios" onclick="alternarView('view-relatorios')">📊 Relatórios</a>
+                <a href="#" id="sidebar-item-palavra" class="sidebar-item" data-view="view-gerenciar-palavra" onclick="alternarView('view-gerenciar-palavra')">📖 Palavra do Dia</a>
                 <a href="#" class="sidebar-item">⚙️ Configurações</a>
             </nav>
             
@@ -424,12 +429,15 @@
                         </div>
                     </div>
 
-                    <!-- Palavra do Dia -->
-                    <div class="card" style="background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(241,245,249,1) 100%);">
-                        <h3 style="color: var(--primary-blue); font-size: 1rem; margin-bottom: 15px;">Palavra do dia</h3>
-                        <p style="font-size: 0.9rem; font-style: italic; line-height: 1.5; color: var(--text-main); margin-bottom: 10px;">"Tudo posso naquele que me fortalece."</p>
-                        <div style="font-size: 0.85rem; font-weight: 600; color: var(--primary-red);">Filipenses 4,13</div>
-                        <div style="font-size: 3rem; opacity: 0.8; text-align:right; margin-top:-20px;">📖</div>
+                    <!-- Palavra do Dia (Container Dinâmico) -->
+                    <div id="home-palavra-dia-container" style="min-height: 150px;">
+                        <div class="card" style="background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(241,245,249,1) 100%); position: relative; overflow: hidden;">
+                            <h3 style="color: var(--primary-blue); font-size: 1rem; margin-bottom: 15px;">Palavra do dia</h3>
+                            <div id="palavra-dia-content">
+                                <p style="font-size: 0.9rem; font-style: italic; line-height: 1.5; color: var(--text-main); margin-bottom: 10px;">Carregando palavra de esperança...</p>
+                            </div>
+                            <div style="font-size: 3rem; opacity: 0.1; position: absolute; bottom: -10px; right: -5px; pointer-events: none;">📖</div>
+                        </div>
                     </div>
                 </div>
             </div> <!-- Fim View Dashboard -->
@@ -592,6 +600,61 @@
                     </div>
                 </div>
             </div> <!-- Fim View Tesouraria -->
+
+            <!-- View Gerenciar Palavra do Dia -->
+            <div id="view-gerenciar-palavra" class="app-view" style="display:none;">
+                <div id="palavra-hub">
+                    <div class="flex justify-between items-center" style="margin-bottom: 20px;">
+                        <div class="flex gap-2">
+                            <button class="btn btn-primary" onclick="prepararFormPalavra('novo')">+ Nova Palavra</button>
+                            <button id="hub-palavra-draft" class="btn btn-outline" style="display:none; font-size:0.8rem;" onclick="prepararFormPalavra('rascunho')">📁 Continuar Rascunho</button>
+                        </div>
+                    </div>
+                    
+                    <h3 style="color: var(--primary-blue); font-size: 0.85rem; margin-bottom: 15px; font-weight: 700; text-transform: uppercase;">📅 Próximas Publicações (7 dias)</h3>
+                    <div id="hub-lista-palavras" style="display:flex; flex-direction:column; gap:10px; margin-bottom: 30px;">
+                        <!-- Carregado via JS -->
+                    </div>
+                </div>
+
+                <div id="form-palavra-container" style="display:none;">
+                    <div class="flex items-center gap-3" style="margin-bottom: 20px;">
+                        <button onclick="mostrarHubPalavra()" style="background:none; border:none; color:var(--primary-blue); cursor:pointer; font-size:1.2rem;">←</button>
+                        <h2 style="color: var(--primary-blue); font-size: 1.2rem;" id="palavra-form-titulo">Nova Palavra do Dia</h2>
+                    </div>
+
+                    <form id="form-palavra" onsubmit="event.preventDefault();" class="flex-col gap-4">
+                        <div class="card" style="padding: 15px; border-left: 4px solid var(--primary-blue);">
+                            <div style="margin-bottom: 15px;">
+                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Data de Exibição</label>
+                                <input type="date" id="palavra-data-input" class="input-field" onchange="autoSavePalavraDraft()">
+                            </div>
+
+                            <div style="margin-bottom: 15px;">
+                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Tipo de Conteúdo</label>
+                                <select id="palavra-tipo-select" class="input-field" onchange="alternarCamposPalavra(); autoSavePalavraDraft();">
+                                    <option value="texto">📖 Texto / Versículo</option>
+                                    <option value="video">🎥 Vídeo</option>
+                                    <option value="audio">🎧 Áudio</option>
+                                    <option value="imagem">🖼️ Imagem</option>
+                                    <option value="desafio">🔥 Desafio do Dia</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Campos Dinâmicos -->
+                        <div id="campos-palavra-dinamicos" class="flex-col gap-4">
+                            <!-- Injetado via JS -->
+                        </div>
+
+                        <div class="flex gap-2" style="margin-top: 10px;">
+                            <button id="btn-publicar-palavra" class="btn btn-primary" style="flex:2;" onclick="publicarPalavra()">Publicar Agora</button>
+                            <button class="btn btn-outline" style="flex:1;" onclick="salvarRascunhoPalavra()">Rascunho</button>
+                        </div>
+                        <p id="palavra-draft-status" style="font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-top: 5px;"></p>
+                    </form>
+                </div>
+            </div>
 
             <!-- View Pessoas -->
             <div id="view-pessoas" class="app-view" style="display:none; padding-top: 10px;">
@@ -1517,7 +1580,7 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../auth.js?v=2.1"></script>
-    <script src="app.js?v=2.4"></script>
+    <script src="app.js?v=2.5"></script>
     <script src="eventos.js?v=2.1"></script>
     <script src="ata.js?v=2.1"></script>
     <script src="escala.js?v=2.1"></script>
@@ -1531,6 +1594,7 @@
     <script src="relatorios.js?v=2.1"></script>
     <script src="noticias.js?v=2.7"></script>
     <script src="configuracoes.js?v=2.1"></script>
+    <script src="palavra_dia.js?v=1.1"></script>
         <!-- Modal: Editar Escala (Urgente) -->
         <div id="modal-editar-escala" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2300; justify-content:center; align-items:center;">
             <div class="card" style="width: 90%; max-width: 400px;">

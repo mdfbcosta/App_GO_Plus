@@ -129,7 +129,8 @@ async function carregarPerfilUsuario(user) {
                     'Escala': p.escala,
                     'Tesouraria': p.tesouraria,
                     'Resumo': p.resumo,
-                    'Gerenciar Notícias': (window.meuCargo && (window.meuCargo.includes('Núcleo') || window.meuCargo.includes('Coordenador'))) ? 'total' : 'nenhum'
+                    'Gerenciar Notícias': (window.meuCargo && (window.meuCargo.includes('Núcleo') || window.meuCargo.includes('Coordenador'))) ? 'total' : 'nenhum',
+                    'Gerenciar Palavra': (window.meuCargo && (window.meuCargo.includes('Núcleo') || window.meuCargo.includes('Coordenador'))) ? 'total' : 'nenhum'
                 };
 
                 const sidebarItems = document.querySelectorAll('.sidebar-item, .menu-mobile-item');
@@ -326,6 +327,7 @@ async function carregarDashboard() {
         carregarEventosHome();
         carregarCoordenadorInfo();
         verificarAlertasNucleo();
+        if (typeof carregarPalavraDiaHome === 'function') carregarPalavraDiaHome();
 
     } catch (e) {
         console.error("Erro ao carregar Dashboard:", e);
@@ -812,6 +814,7 @@ window.alternarView = function(viewId, ...args) {
         if (viewId === 'view-eventos' && typeof carregarMesesTabs === 'function') carregarMesesTabs(...args);
         if (viewId === 'view-configuracoes' && typeof carregarConfiguracoes === 'function') carregarConfiguracoes();
         if (viewId === 'view-ata' && typeof carregarAtas === 'function') carregarAtas();
+        if (viewId === 'view-gerenciar-palavra' && typeof mostrarHubPalavra === 'function') mostrarHubPalavra();
 
         targetView.classList.add('active');
         
@@ -827,7 +830,8 @@ window.alternarView = function(viewId, ...args) {
             'view-resumo-go': ['Resumo do GO'],
             'view-tesouraria': ['Tesouraria'],
             'view-relatorios': ['Relatórios'],
-            'view-gerenciar-noticias': ['Gerenciar Notícias']
+            'view-gerenciar-noticias': ['Gerenciar Notícias'],
+            'view-gerenciar-palavra': ['Palavra do Dia']
         };
         const activeLabels = menuLabels[viewId] || [];
 
@@ -854,6 +858,7 @@ window.alternarView = function(viewId, ...args) {
             if (viewId === 'view-perfil') headerTitle.innerText = 'Meu Perfil';
             if (viewId === 'view-relatorios') headerTitle.innerText = 'Relatórios Gerenciais';
             if (viewId === 'view-configuracoes') headerTitle.innerText = 'Configurações do GO';
+            if (viewId === 'view-gerenciar-palavra') headerTitle.innerText = 'Editorial: Palavra do Dia';
         }
     }
 }
