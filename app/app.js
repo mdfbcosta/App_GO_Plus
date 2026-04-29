@@ -982,41 +982,50 @@ async function carregarMeusPedidos() {
 
 async function carregarEventosHome() {
     const container = document.getElementById('lista-eventos-home');
-    if (!container) return;
+    const card = document.getElementById('desktop-card-eventos-home');
+    if (!container || !card) return;
 
     try {
         const agora = new Date();
-        const primeiroDiaMes = new Date(agora.getFullYear(), agora.getMonth(), 1).toISOString();
-        const ultimoDiaMes = new Date(agora.getFullYear(), agora.getMonth() + 1, 0, 23, 59, 59).toISOString();
+        const dataInicio = agora.toISOString();
+        const daqui15Dias = new Date();
+        daqui15Dias.setDate(agora.getDate() + 15);
+        const dataFim = daqui15Dias.toISOString();
 
+        // Tentamos usar 'data_hora' (que é o padrão no banco)
         let query = supabaseClient
             .from('eventos')
             .select('*')
             .eq('grupo_id', window.meuGrupoId)
-            .gte('data', primeiroDiaMes)
-            .lte('data', ultimoDiaMes)
-            .order('data', { ascending: true });
+            .gte('data_hora', dataInicio)
+            .lte('data_hora', dataFim)
+            .order('data_hora', { ascending: true });
 
         if (window.meuCargo === 'Participante') query = query.eq('visibilidade', 'Público');
 
-        const { data: eventos } = await query;
-        container.innerHTML = '';
-
-        if (!eventos || eventos.length === 0) {
-            container.innerHTML = '<p style="font-size:0.75rem; color:var(--text-muted); text-align:center;">Nenhum evento este mês.</p>';
+        const { data: eventos, error } = await query;
+        
+        if (error || !eventos || eventos.length === 0) {
+            card.style.display = 'none';
             return;
         }
 
+        card.style.display = 'block';
+        container.innerHTML = '';
+
         eventos.forEach(ev => {
-            const data = new Date(ev.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            const data = new Date(ev.data_hora).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
             container.innerHTML += `
-                <div style="padding: 8px; background: #f8fafc; border-radius: 6px; border-left: 3px solid var(--primary-red); margin-bottom:5px;">
-                    <div style="font-size: 0.8rem; font-weight: 600;">${ev.titulo}</div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted);">📅 ${data}</div>
+                <div style="padding: 10px; background: #f8fafc; border-radius: 8px; border-left: 4px solid var(--primary-blue); margin-bottom:8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-blue);">${ev.titulo}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">📅 ${data} • 📍 ${ev.local_evento || 'GO+'}</div>
                 </div>
             `;
         });
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error("Erro ao carregar eventos na home:", e);
+        card.style.display = 'none';
+    }
 }
 
 window.compartilharConvite = async function() {
