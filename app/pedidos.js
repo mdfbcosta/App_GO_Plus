@@ -41,7 +41,7 @@ async function carregarPedidos() {
             .from('pedidos_oracao')
             .select(`
                 *,
-                membros!membro_id (nome, telefone)
+                membros!membro_id (nome, telefone, foto_url)
             `)
             .eq('grupo_id', window.meuGrupoId)
             .order('criado_em', { ascending: false });
@@ -86,6 +86,8 @@ async function carregarPedidos() {
             const linkZap = telBruto ? `https://api.whatsapp.com/send?phone=55${telBruto}` : '#';
             const linkTel = telBruto ? `tel:+55${telBruto}` : '#';
             const telExibicao = p.membros?.telefone || 'Sem número';
+            
+            const fotoUrl = p.membros?.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.membros?.nome || 'Usuário')}&background=facc15&color=fff`;
 
             const div = document.createElement('div');
             div.className = 'card';
@@ -100,7 +102,7 @@ async function carregarPedidos() {
             div.innerHTML = `
                 <div class="flex justify-between items-start" style="margin-bottom: 12px;">
                     <div class="flex gap-2 items-center">
-                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(p.membros?.nome || 'Usuário')}&background=facc15&color=fff" style="width:32px; height:32px; border-radius:50%;">
+                        <img src="${fotoUrl}" style="width:32px; height:32px; border-radius:50%; object-fit: cover;">
                         <div>
                             <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-blue);">${p.membros?.nome || 'Usuário'}</div>
                             <div style="font-size: 0.7rem; color: var(--text-muted);">${dataStr}</div>
