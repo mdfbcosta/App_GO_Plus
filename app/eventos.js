@@ -103,10 +103,10 @@ window.autoSaveDraftEvento = function() {
 
 // --- NAVEGAÇÃO ---
 
-window.carregarMesesTabs = function() {
+window.carregarMesesTabs = function(mesDesejado = null, eventoIdParaFocar = null) {
     const container = document.getElementById('meses-tabs'); if (!container) return;
     const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-    const mesAtual = new Date().getMonth();
+    const mesAtual = mesDesejado !== null ? mesDesejado : new Date().getMonth();
     container.innerHTML = '';
     meses.forEach((nome, index) => {
         const btn = document.createElement('button');
@@ -120,11 +120,12 @@ window.carregarMesesTabs = function() {
         };
         container.appendChild(btn);
     });
-    carregarEventos(mesAtual);
+    carregarEventos(mesAtual, eventoIdParaFocar);
 };
 
-window.carregarEventos = async function(mesIndex) {
+window.carregarEventos = async function(mesIndex, eventoIdParaFocar = null) {
     if (!window.meuGrupoId) return;
+    const btnNovo = document.getElementById('btn-novo-evento');
     const temPermissao = (window.meuCargo && (window.meuCargo.includes('Coordenador') || window.meuCargo.includes('Secretário')));
     if (btnNovo) btnNovo.style.display = temPermissao ? 'block' : 'none';
 
@@ -154,8 +155,9 @@ window.carregarEventos = async function(mesIndex) {
             const dFim = meta.data_fim ? new Date(meta.data_fim) : null;
             
             const card = document.createElement('div');
+            card.id = `evento-card-${ev.id}`;
             card.className = 'card';
-            card.style.cssText = 'margin-bottom: 15px; overflow: hidden; padding: 0;';
+            card.style.cssText = 'margin-bottom: 15px; overflow: hidden; padding: 0; transition: all 0.5s ease;';
             
             let imgHtml = meta.foto ? `<img src="${meta.foto}" style="width:100%; height:180px; object-fit:cover; border-bottom:1px solid #eee;">` : '';
             let dataStr = dIni.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
@@ -189,6 +191,21 @@ window.carregarEventos = async function(mesIndex) {
             `;
             lista.appendChild(card);
         });
+
+        if (eventoIdParaFocar) {
+            setTimeout(() => {
+                const el = document.getElementById(`evento-card-${eventoIdParaFocar}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.style.boxShadow = '0 0 20px rgba(30, 58, 138, 0.5)';
+                    el.style.transform = 'scale(1.02)';
+                    setTimeout(() => { 
+                        el.style.boxShadow = ''; 
+                        el.style.transform = 'scale(1)';
+                    }, 2000);
+                }
+            }, 500);
+        }
     } catch (err) { console.error(err); }
 };
 

@@ -1014,17 +1014,30 @@ async function carregarEventosHome() {
         container.innerHTML = '';
 
         eventos.forEach(ev => {
-            const data = new Date(ev.data_hora).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            const dataObjeto = new Date(ev.data_hora);
+            const dataStr = dataObjeto.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            const mesIndex = dataObjeto.getMonth();
+            
             container.innerHTML += `
-                <div onclick="alternarView('view-eventos')" style="padding: 10px; background: #f8fafc; border-radius: 8px; border-left: 4px solid var(--primary-blue); margin-bottom:8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor:pointer;">
+                <div onclick="window.irParaEvento(${mesIndex}, '${ev.id}')" style="padding: 10px; background: #f8fafc; border-radius: 8px; border-left: 4px solid var(--primary-blue); margin-bottom:8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor:pointer;">
                     <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-blue);">${ev.titulo}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">📅 ${data} • 📍 ${ev.local_evento || 'GO+'}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">📅 ${dataStr} • 📍 ${ev.local_evento || 'GO+'}</div>
                 </div>
             `;
         });
     } catch (e) { 
         console.error("Erro ao carregar eventos na home:", e);
         card.style.display = 'none';
+    }
+}
+
+window.irParaEvento = function(mesIndex, eventoId) {
+    // Primeiro alternamos a view
+    alternarView('view-eventos');
+    
+    // Depois forçamos o carregamento do mês específico
+    if (typeof window.carregarMesesTabs === 'function') {
+        window.carregarMesesTabs(mesIndex, eventoId);
     }
 }
 
