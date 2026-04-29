@@ -44,6 +44,7 @@ async function carregarPessoas() {
             card.className = 'card flex justify-between items-center';
             card.style.padding = '12px 15px';
             card.style.marginBottom = '0';
+            card.style.position = 'relative';
             
             const foto = m.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.nome)}&background=1E3A8A&color=fff`;
 
@@ -80,17 +81,21 @@ async function carregarPessoas() {
                         <div style="font-size: 0.75rem; color: var(--text-muted);">${cargoExibicao}</div>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="flex-col items-end">
-                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600; margin-bottom: 2px;">${telExibicao}</div>
-                        <div class="flex gap-2">
+                <div class="flex items-center gap-2">
+                    <div id="contato-info-${m.id}" style="display:none; position:absolute; right:60px; background:white; border:1px solid #eee; padding:8px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:10; text-align:center;">
+                        <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 5px;">${telExibicao}</div>
+                        <div class="flex gap-4 justify-center">
                             ${telBruto ? `
-                                <a href="${linkZap}" target="_blank" style="text-decoration:none; font-size: 1.1rem;" title="WhatsApp">🟢</a>
-                                <a href="${linkTel}" style="text-decoration:none; font-size: 1.1rem;" title="Ligar">📞</a>
-                            ` : '<span style="font-size:0.65rem; color:#ccc;">Contato não cadastrado</span>'}
+                                <a href="${linkZap}" target="_blank" style="text-decoration:none; font-size: 1.2rem;">🟢</a>
+                                <a href="${linkTel}" style="text-decoration:none; font-size: 1.2rem;">📞</a>
+                            ` : '<span style="font-size:0.6rem; color:#999;">Sem número</span>'}
                         </div>
                     </div>
-                    <button onclick="removerMembro('${m.id}', '${m.nome}')" style="background:none; border:none; color:var(--primary-red); cursor:pointer; font-size:1.1rem; padding: 5px; margin-left: 5px;" title="Remover">🗑️</button>
+                    <button onclick="document.getElementById('contato-info-${m.id}').style.display = document.getElementById('contato-info-${m.id}').style.display === 'none' ? 'block' : 'none'" 
+                            style="background:#f1f5f9; border:none; color:var(--primary-blue); cursor:pointer; font-size:1rem; width:35px; height:35px; border-radius:50%; display:flex; items-center; justify-content:center;" title="Contato">
+                        📇
+                    </button>
+                    <button onclick="removerMembro('${m.id}', '${m.nome}')" style="background:none; border:none; color:var(--primary-red); cursor:pointer; font-size:1.1rem; padding: 5px;" title="Remover">🗑️</button>
                 </div>
             `;
 
