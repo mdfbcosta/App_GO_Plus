@@ -173,6 +173,7 @@ window.copiarLinkIndicacao = copiarLinkIndicacao;
 function copiarLinkIndicacao() {
     const text = document.getElementById('perfil-link-indicacao').innerText;
     navigator.clipboard.writeText(text).then(() => {
-        alert("Link de indicação copiado!");
+        if (window.showToast) window.showToast("Link de indicação copiado!");
+        else alert("Link de indicação copiado!");
     });
 }

@@ -465,6 +465,16 @@ window.expandirNoticia = function(id) {
     }
 };
 
+window.showToast = function(mensagem) {
+    const toast = document.getElementById('go-toast');
+    if (!toast) return;
+    toast.innerText = mensagem;
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+};
+
 window.compartilharNoticia = function(id) {
     if (navigator.share) {
         navigator.share({
@@ -473,8 +483,8 @@ window.compartilharNoticia = function(id) {
             url: window.location.href
         }).catch(() => {});
     } else {
-        alert("Link copiado para a área de transferência!");
         navigator.clipboard.writeText(window.location.href);
+        window.showToast("Link copiado!");
     }
 };
 
