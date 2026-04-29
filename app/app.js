@@ -438,96 +438,155 @@ window.clickMenuMobile = function(viewId) {
 };
 
 // ==========================================
+// MÓDULO: DASHBOARD E NAVEGAÇÃO CENTRAL
+// ==========================================
+
+// Global state para notícias
+window.expandirNoticia = function(id) {
+    const txt = document.getElementById(`noticia-texto-${id}`);
+    const btn = document.getElementById(`btn-mais-${id}`);
+    if (txt) {
+        txt.style.webkitLineClamp = "unset";
+        txt.style.display = "block";
+        if (btn) btn.style.display = 'none';
+    }
+};
+
+window.compartilharNoticia = function(id) {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Notícia do GO+',
+            text: 'Confira essa novidade no App GO+!',
+            url: window.location.href
+        }).catch(() => {});
+    } else {
+        alert("Link copiado para a área de transferência!");
+        navigator.clipboard.writeText(window.location.href);
+    }
+};
+
+// Delegated Listener Global para Excluir Notícia (Resolução definitiva)
+document.addEventListener('click', (e) => {
+    // Procura o botão de excluir ou qualquer ícone dentro dele
+    const btnDel = e.target.closest('button[onclick*="excluirNoticia"]');
+    if (btnDel) {
+        // Extrai o ID do atributo onclick
+        const match = btnDel.getAttribute('onclick').match(/'([^']+)'/);
+        if (match && match[1]) {
+            const id = match[1];
+            console.log("Global Catch: Excluindo", id);
+            if (typeof window.excluirNoticia === 'function') {
+                e.preventDefault();
+                e.stopPropagation();
+                window.excluirNoticia(id);
+            }
+        }
+    }
+});
+
+// ==========================================
 // MÓDULO: NOTÍCIAS (MURAL)
 // ==========================================
-async function carregarAconteceu() {
+window.carregarAconteceu = async function() {
+    console.log("Iniciando Feed de Notícias...");
     try {
-        const { data: noticias, error } = await supabaseClient
+        const { data, error } = await supabaseClient
             .from('aconteceu_go')
-            .select(`*, membros (nome, foto_url)`)
+            .select(`*, membros(nome, foto_url)`)
             .eq('grupo_id', window.meuGrupoId)
-            .order('criado_em', { ascending: false })
-            .limit(10);
+            .order('criado_em', { ascending: false });
 
         if (error) throw error;
 
+        const container = document.getElementById('lista-aconteceu');
         const listaDesk = document.getElementById('desktop-lista-aconteceu');
-        if (listaDesk) listaDesk.innerHTML = '';
+        const empty = '<p style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:20px;">Nenhuma novidade ainda.</p>';
 
-        if (noticias.length === 0) {
-            const empty = '<p style="font-size:0.8rem; color:var(--text-muted); text-align:center;">Nenhuma notícia recente.</p>';
+        if (!data || data.length === 0) {
+            if (container) container.innerHTML = empty;
             if (listaDesk) listaDesk.innerHTML = empty;
-        } else {
-            noticias.forEach(n => {
-                let fotosArr = [];
-                let dataOcorridoMeta = null;
-                try { 
-                    const meta = typeof n.fotos === 'string' ? JSON.parse(n.fotos) : (n.fotos || []); 
-                    if (Array.isArray(meta)) {
-                        fotosArr = meta;
-                    } else if (meta && meta.urls) {
-                        fotosArr = meta.urls;
-                        dataOcorridoMeta = meta.data_ocorrido;
-                    }
-                } catch(e){}
-
-                const dataExibicao = dataOcorridoMeta ? new Date(dataOcorridoMeta + 'T12:00:00').toLocaleDateString('pt-BR') : new Date(n.criado_em).toLocaleDateString('pt-BR');
-                const fotoMembro = n.membros?.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(n.membros?.nome || 'U')}&background=1E3A8A&color=fff`;
-                
-                const reacoes = n.reacoes || [];
-                const userJaCurtiu = reacoes.some(r => r.membro_id === window.meuMembroId);
-                
-                const itemHtml = `
-                    <div class="insta-post" style="background: #fff; border-radius: 12px; border: 1px solid #efefef; overflow: hidden; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                        <!-- Header -->
-                        <div class="flex items-center gap-3" style="padding: 10px;">
-                            <img src="${fotoMembro}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border: 1px solid #dbdbdb; padding: 1px;">
-                            <div class="flex flex-col">
-                                <span style="font-size: 0.75rem; font-weight:700; color:#262626;">${n.membros?.nome || 'GO+'}</span>
-                                <span style="font-size: 0.6rem; color:#8e8e8e;">${dataExibicao}</span>
-                            </div>
-                        </div>
-
-                        <!-- Media (Carousel/Image) -->
-                        ${fotosArr.length > 0 ? `
-                            <div style="position: relative; width: 100%; aspect-ratio: 1/1; background: #fafafa; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                                <div class="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar" style="width: 100%; height: 100%;">
-                                    ${fotosArr.map(f => `<img src="${f}" style="width:100%; height:100%; object-fit:cover; flex-shrink:0; snap-align: start;">`).join('')}
-                                </div>
-                                ${fotosArr.length > 1 ? `
-                                    <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.6rem; padding: 3px 7px; border-radius: 10px; pointer-events: none;">
-                                        1/${fotosArr.length}
-                                    </div>
-                                ` : ''}
-                            </div>
-                        ` : ''}
-
-                        <!-- Actions -->
-                        <div style="padding: 10px;">
-                            <div class="flex items-center gap-3" style="margin-bottom: 6px;">
-                                <button onclick="reagirNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center;">
-                                    <span id="noticia-like-icon-${n.id}" style="font-size: 1.4rem; color: ${userJaCurtiu ? '#ed4956' : '#262626'};">${userJaCurtiu ? '❤️' : '🤍'}</span>
-                                </button>
-                            </div>
-                            <div style="font-size: 0.8rem; font-weight: 700; color: #262626; margin-bottom: 4px;">
-                                <span id="noticia-like-count-${n.id}">${reacoes.length}</span> curtidas
-                            </div>
-                            
-                            <!-- Caption -->
-                            <div style="font-size: 0.8rem; line-height: 1.4; color: #262626;">
-                                ${n.titulo ? `<div style="font-weight: 700; margin-bottom: 2px;">${n.titulo}</div>` : ''}
-                                <div style="white-space: pre-wrap; color: #4b5563;">${n.texto}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                if (listaDesk) listaDesk.innerHTML += itemHtml;
-            });
+            return;
         }
-    } catch (e) {
-        console.error("Erro ao carregar aconteceu", e);
+
+        let html = '';
+        data.forEach(n => {
+            let fotosArr = [];
+            let dataOcorridoMeta = null;
+            try { 
+                const meta = typeof n.fotos === 'string' ? JSON.parse(n.fotos) : (n.fotos || []); 
+                if (Array.isArray(meta)) {
+                    fotosArr = meta;
+                } else if (meta && meta.urls) {
+                    fotosArr = meta.urls;
+                    dataOcorridoMeta = meta.data_ocorrido;
+                }
+            } catch(e){}
+
+            const dataPub = new Date(n.criado_em).toLocaleDateString('pt-BR');
+            const dataOcorridoStr = dataOcorridoMeta ? new Date(dataOcorridoMeta + 'T12:00:00').toLocaleDateString('pt-BR') : dataPub;
+            const fotoMembro = n.membros?.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(n.membros?.nome || 'U')}&background=1E3A8A&color=fff`;
+            
+            const reacoes = n.reacoes || [];
+            const userJaCurtiu = reacoes.some(r => r.membro_id === window.meuMembroId);
+            
+            html += `
+            <div class="insta-post" style="scroll-snap-align: start; min-height: 450px; display: flex; flex-direction: column; background: #fff; border-bottom: 8px solid #f1f5f9;">
+                <!-- Header -->
+                <div class="flex items-center gap-3" style="padding: 12px;">
+                    <img src="${fotoMembro}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border: 1px solid #dbdbdb;">
+                    <div class="flex flex-col">
+                        <span style="font-size: 0.85rem; font-weight:700; color:#262626;">${n.membros?.nome || 'GO+'}</span>
+                        <span style="font-size: 0.65rem; color:#8e8e8e;">Publicada em ${dataPub}</span>
+                    </div>
+                </div>
+
+                <!-- Media Section -->
+                <div style="position: relative; width: 100%; aspect-ratio: 1/1; background: #fafafa; overflow: hidden;">
+                    ${fotosArr.length > 0 ? `
+                        <img src="${fotosArr[0]}" style="width:100%; height:100%; object-fit:cover;">
+                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 600;">
+                            Aconteceu em ${dataOcorridoStr}
+                        </div>
+                    ` : `
+                        <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#ccc; font-size:2rem;">🖼️</div>
+                    `}
+                </div>
+
+                <!-- Actions Bar -->
+                <div class="flex gap-4" style="padding: 12px 12px 8px 12px;">
+                    <button onclick="window.reagirNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer;">
+                        <span id="noticia-like-icon-${n.id}" style="font-size: 1.5rem; color: ${userJaCurtiu ? '#ed4956' : '#262626'}">${userJaCurtiu ? '❤️' : '🤍'}</span>
+                    </button>
+                    <button onclick="window.compartilharNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                    </button>
+                </div>
+
+                <!-- Likes -->
+                <div style="padding: 0 12px; font-size: 0.85rem; font-weight: 700; color: #262626; margin-bottom: 4px;">
+                    <span id="noticia-like-count-${n.id}">${reacoes.length}</span> curtidas
+                </div>
+
+                <!-- Caption -->
+                <div style="padding: 0 12px 15px 12px; font-size: 0.85rem; line-height: 1.4; color: #262626;">
+                    <span style="font-weight: 700; margin-right: 5px;">${n.membros?.nome || 'GO+'}</span>
+                    <span id="noticia-texto-${n.id}" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        ${n.titulo ? `<strong>${n.titulo}</strong> - ` : ''}${n.texto}
+                    </span>
+                    ${n.texto.length > 80 ? `<span id="btn-mais-${n.id}" onclick="window.expandirNoticia('${n.id}')" style="color: #8e8e8e; cursor: pointer; margin-left: 5px;">... mais</span>` : ''}
+                </div>
+            </div>
+            `;
+        });
+
+        const finalHtml = `<div style="height: 100%; overflow-y: auto; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch;">${html}</div>`;
+        if (container) container.innerHTML = finalHtml;
+        if (listaDesk) listaDesk.innerHTML = finalHtml;
+
+    } catch (err) {
+        console.error("Erro ao carregar aconteceu:", err);
     }
-}
+};
 
 window.abrirModalAconteceu = function() {
     document.getElementById('modal-aconteceu').style.display = 'flex';
