@@ -161,12 +161,11 @@ async function carregarPerfilUsuario(user) {
                     if (btnPostarNoticia) btnPostarNoticia.style.display = 'block';
                     if (btnPostarNoticiaDesk) btnPostarNoticiaDesk.style.display = 'block';
                 }
+            } else {
+                console.error("Usuário sem perfil de membro. Redirecionando.");
+                await supabaseClient.auth.signOut();
+                window.location.href = '../index.html';
             }
-        } else {
-            console.error("Usuário sem perfil de membro. Redirecionando.");
-            await supabaseClient.auth.signOut();
-            window.location.href = '../index.html';
-        }
 
     } catch (err) {
         console.error("Erro ao carregar perfil:", err);
