@@ -76,7 +76,10 @@ async function carregarListaNoticiasHub() {
             item.innerHTML = `
                 <div style="flex: 1; min-width: 0;">
                     <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-blue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${n.titulo || 'Sem título'}</div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted);">📅 ${dataStr}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); display: flex; gap: 10px;">
+                        <span>📅 ${dataStr}</span>
+                        <span style="color: #ed4956; font-weight: 700;">❤️ ${n.reacoes?.length || 0}</span>
+                    </div>
                 </div>
                 <div class="flex gap-2" style="margin-left: 10px;">
                     <button type="button" class="btn-edit-noticia" data-id="${n.id}" style="background:none; border:none; color:var(--primary-blue); font-size:1.2rem; cursor:pointer; padding:8px;" title="Editar">✏️</button>
