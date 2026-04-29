@@ -152,7 +152,7 @@ window.carregarEventos = async function(mesIndex) {
                         ${ev.visibilidade === 'Privado' ? '<span style="font-size:0.6rem; background:#fee2e2; color:#b91c1c; padding:2px 6px; border-radius:4px;">Privado</span>' : ''}
                     </div>
                     <p style="font-size:0.75rem; color:var(--text-muted); margin:5px 0;">📅 ${dataStr} • ⏰ ${dIni.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}${dFim ? ' - '+dFim.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</p>
-                    <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">📍 ${ev.local || 'Local não definido'}</p>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">📍 ${ev.local_evento || 'Local não definido'}</p>
                     <p style="font-size:0.8rem; line-height:1.4;">${meta.texto || 'Sem descrição.'}</p>
                     
                     <div class="flex gap-2" style="margin-top:15px;">
@@ -213,7 +213,7 @@ window.prepararEdicaoEvento = async function(id) {
         const valData = ev[COLUNA_DATA_DETECTADA];
         document.getElementById('evento-data').value = valData ? valData.substring(0,16) : '';
         document.getElementById('evento-data-fim').value = meta.data_fim ? meta.data_fim.substring(0,16) : '';
-        document.getElementById('evento-local').value = ev.local || '';
+        document.getElementById('evento-local').value = ev.local_evento || '';
         document.getElementById('evento-desc').value = meta.texto || '';
         document.getElementById('evento-link').value = meta.link || '';
         document.getElementById('evento-visibilidade').value = ev.visibilidade || 'Público';
@@ -245,7 +245,7 @@ async function salvarEvento(e) {
         const dados = {
             grupo_id: window.meuGrupoId,
             titulo: document.getElementById('evento-titulo').value,
-            local: document.getElementById('evento-local').value,
+            local_evento: document.getElementById('evento-local').value,
             descricao: JSON.stringify(meta),
             visibilidade: document.getElementById('evento-visibilidade').value
         };
