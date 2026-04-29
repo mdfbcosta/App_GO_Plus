@@ -166,6 +166,12 @@ async function carregarDashboard() {
         return;
     }
 
+    // Controle de visibilidade: Card de Presença apenas para servos
+    const cardPresenca = document.getElementById('desktop-card-presenca');
+    if (cardPresenca) {
+        cardPresenca.style.display = (window.meuCargo === 'Participante') ? 'none' : 'flex';
+    }
+
     try {
         // 1. Informações do Grupo
         const { data: grupo } = await supabaseClient
