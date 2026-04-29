@@ -995,17 +995,20 @@ async function carregarMeusPedidos() {
                 ${p.resposta ? `
                     <div style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px; border-radius: 8px; margin-top: 10px; position: relative;">
                         <div style="font-size: 0.65rem; color: var(--primary-blue); font-weight: 800; text-transform: uppercase; margin-bottom: 5px;">Resposta Recebida:</div>
-                        <p style="font-size: 0.9rem; color: #334155; margin: 0; line-height: 1.4;">${p.resposta}</p>
-                        
-                        <div id="reacao-area-${p.id}" style="margin-top: 10px;">
-                            ${p.reacao ? `
-                                <span style="font-size: 1.2rem;">${p.reacao}</span>
-                            ` : `
-                                <button onclick="reagirPedido('${p.id}', '👍')" style="background: white; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; transition: all 0.2s;" onmouseover="this.style.border='1px solid var(--primary-blue)'">
-                                    <span>Marcar como lido</span> 👍
-                                </button>
-                            `}
-                        </div>
+                        <p style="font-size: 0.9rem; color: #334155; margin: 0; line-height: 1.4; font-style: italic;">"${p.resposta}"</p>
+                    </div>
+                    
+                    <div id="reacao-area-${p.id}" style="margin-top: 8px; padding-left: 5px;">
+                        ${p.reacao ? `
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span style="font-size: 0.7rem; color: #64748b;">✓ Você marcou como lido</span>
+                                <span style="font-size: 1.1rem;">${p.reacao}</span>
+                            </div>
+                        ` : `
+                            <button onclick="reagirPedido('${p.id}', '👍')" style="background: white; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05);" onmouseover="this.style.border='1px solid var(--primary-blue)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.border='1px solid #e2e8f0'; this.style.transform='translateY(0)'">
+                                <span>Marcar como lido</span> 👍
+                            </button>
+                        `}
                     </div>
                 ` : ''}
             `;

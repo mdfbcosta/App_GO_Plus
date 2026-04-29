@@ -107,15 +107,22 @@ async function carregarPedidos() {
                 <p style="font-size: 0.9rem; line-height: 1.5; color: #374151; margin-bottom: 15px; padding-left: 5px; border-left: 2px solid #f3f4f6;">${p.texto}</p>
 
                 ${p.resposta ? `
-                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 8px; margin-top: 10px;">
-                        <div style="font-size: 0.65rem; color: #166534; font-weight: 800; text-transform: uppercase; margin-bottom: 4px;">Resposta da Intercessão:</div>
-                        <p style="font-size: 0.85rem; color: #166534; margin: 0; line-height: 1.4;">${p.resposta}</p>
-                        ${p.reacao ? `<div style="margin-top: 5px; font-size: 1.2rem;">${p.reacao}</div>` : ''}
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 10px; margin-top: 10px;">
+                        <div style="font-size: 0.65rem; color: #166534; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; gap: 5px;">
+                            <span>🕊️ Resposta da Intercessão:</span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: #166534; margin: 0; line-height: 1.5; font-style: italic;">"${p.resposta}"</p>
                     </div>
+                    ${p.reacao ? `
+                        <div style="margin-top: 8px; display: flex; align-items: center; gap: 5px; padding-left: 5px;">
+                            <span style="font-size: 0.7rem; color: #64748b; font-weight: 500;">✓ ${p.membros?.nome.split(' ')[0]} marcou como lido</span>
+                            <span style="font-size: 1.1rem;">${p.reacao}</span>
+                        </div>
+                    ` : ''}
                 ` : (ehIntercessao ? `
                     <div style="margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 12px;">
-                        <textarea id="resp-${p.id}" class="input-field" placeholder="Escreva uma palavra de fé..." rows="2" style="font-size: 0.8rem; margin-bottom: 8px;"></textarea>
-                        <button class="btn btn-primary" onclick="enviarRespostaPedido('${p.id}')" style="font-size: 0.75rem; padding: 6px 12px; width: auto;">Responder Pedido</button>
+                        <textarea id="resp-${p.id}" class="input-field" placeholder="Escreva uma palavra de fé..." rows="2" style="font-size: 0.8rem; margin-bottom: 8px; border-color: #e2e8f0;"></textarea>
+                        <button class="btn btn-primary" onclick="enviarRespostaPedido('${p.id}')" style="font-size: 0.75rem; padding: 8px 16px; width: auto; background: var(--primary-blue);">Enviar Resposta Fraternal</button>
                     </div>
                 ` : '')}
             `;
