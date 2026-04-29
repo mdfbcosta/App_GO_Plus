@@ -5,6 +5,7 @@
 let noticiasFotosBase64 = [];
 let noticiaModo = 'novo';
 let noticiaIdEmEdicao = null;
+let listaNoticiasCache = [];
 
 // --- HUB E NAVEGAÇÃO ---
 
@@ -25,25 +26,67 @@ window.mostrarHubNoticias = async function() {
     const btnDraft = document.getElementById('hub-noticia-draft');
     if (btnDraft) btnDraft.style.display = saved ? 'flex' : 'none';
 
-    if (window.meuGrupoId) {
-        try {
-            const { data: ult } = await supabaseClient
-                .from('aconteceu_go')
-                .select('*')
-                .eq('grupo_id', window.meuGrupoId)
-                .order('criado_em', { ascending: false })
-                .limit(1)
-                .maybeSingle();
-                
-            const btnEdit = document.getElementById('hub-noticia-edit');
-            if (ult && btnEdit) {
-                btnEdit.style.display = 'flex';
-                window.ultimaNoticiaCache = ult;
-            } else if (btnEdit) {
-                btnEdit.style.display = 'none';
-            }
-        } catch(e) { console.error("Erro ao carregar cache de notícia:", e); }
+    await carregarListaNoticiasHub();
+};
+
+async function carregarListaNoticiasHub() {
+    const container = document.getElementById('hub-lista-noticias');
+    if (!container) return;
+
+    try {
+        const umMesAtras = new Date();
+        umMesAtras.setDate(umMesAtras.getDate() - 30);
+
+        const { data, error } = await supabaseClient
+            .from('aconteceu_go')
+            .select('*')
+            .eq('grupo_id', window.meuGrupoId)
+            .gte('criado_em', umMesAtras.toISOString())
+            .order('criado_em', { ascending: false });
+
+        if (error) throw error;
+        listaNoticiasCache = data || [];
+
+        container.innerHTML = '';
+        if (listaNoticiasCache.length === 0) {
+            container.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 20px;">Nenhuma notícia nos últimos 30 dias.</p>';
+            return;
+        }
+
+        listaNoticiasCache.forEach(n => {
+            const dataStr = n.data_ocorrido ? new Date(n.data_ocorrido + 'T12:00:00').toLocaleDateString('pt-BR') : new Date(n.criado_em).toLocaleDateString('pt-BR');
+            const item = document.createElement('div');
+            item.className = 'flex justify-between items-center';
+            item.style.padding = '12px';
+            item.style.background = '#f8fafc';
+            item.style.borderRadius = '10px';
+            item.style.border = '1px solid #e2e8f0';
+            
+            item.innerHTML = `
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-blue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${n.titulo || 'Sem título'}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">📅 ${dataStr}</div>
+                </div>
+                <div class="flex gap-2" style="margin-left: 10px;">
+                    <button onclick="prepararEdicaoNoticia('${n.id}')" style="background:none; border:none; color:var(--primary-blue); font-size:1.1rem; cursor:pointer;" title="Editar">✏️</button>
+                    <button onclick="excluirNoticia('${n.id}')" style="background:none; border:none; color:var(--primary-red); font-size:1.1rem; cursor:pointer;" title="Excluir">🗑️</button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+
+    } catch (e) {
+        console.error("Erro ao carregar lista de notícias:", e);
+        container.innerHTML = '<p style="color: var(--primary-red); font-size: 0.8rem; text-align: center;">Erro ao carregar histórico.</p>';
     }
+}
+
+window.prepararEdicaoNoticia = function(id) {
+    const noticia = listaNoticiasCache.find(n => n.id === id);
+    if (!noticia) return;
+
+    window.noticiaParaEditarCache = noticia;
+    prepararFormNoticia('edit_specific');
 };
 
 window.prepararFormNoticia = function(modo) {
@@ -81,8 +124,8 @@ window.prepararFormNoticia = function(modo) {
                 noticiasFotosBase64 = saved.fotos || [];
                 renderPreviewsNoticia();
             }
-        } else if (modo === 'edit' && window.ultimaNoticiaCache) {
-            const n = window.ultimaNoticiaCache;
+        } else if (modo === 'edit_specific' && window.noticiaParaEditarCache) {
+            const n = window.noticiaParaEditarCache;
             noticiaIdEmEdicao = n.id;
             noticiaModo = 'edit';
             if (btnPub) btnPub.innerText = "Salvar Alterações";
@@ -100,6 +143,25 @@ window.prepararFormNoticia = function(modo) {
     } catch(err) {
         console.error("Falha crítica ao preparar formulário:", err);
         alert("Erro ao abrir o editor. Verifique o console.");
+    }
+};
+
+window.excluirNoticia = async function(id) {
+    if (!confirm("Tem certeza que deseja excluir esta notícia permanentemente?")) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('aconteceu_go')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+        alert("Notícia excluída!");
+        
+        await carregarListaNoticiasHub();
+        if (window.carregarDashboard) window.carregarDashboard();
+    } catch (e) {
+        alert("Erro ao excluir: " + e.message);
     }
 };
 
@@ -212,7 +274,7 @@ window.publicarNoticia = async function() {
             titulo: titulo,
             texto: texto,
             fotos: noticiasFotosBase64,
-            data_ocorrido: dataOcorrido // Novo campo para data do evento
+            data_ocorrido: dataOcorrido
         };
 
         if (noticiaModo === 'edit' && noticiaIdEmEdicao) {
