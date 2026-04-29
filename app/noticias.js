@@ -103,21 +103,42 @@ window.prepararEdicaoNoticia = function(id) {
 };
 
 window.excluirNoticia = async function(id) {
-    console.log("Excluindo:", id);
-    if (!confirm("Confirmar exclusão permanente desta notícia?")) return;
+    console.log("Iniciando exclusão da notícia ID:", id);
+    if (!id) {
+        console.error("ID da notícia não fornecido.");
+        return;
+    }
+
+    const confirmacao = confirm("Tem certeza que deseja excluir permanentemente esta notícia?");
+    if (!confirmacao) return;
 
     try {
+        console.log("Chamando Supabase para deletar...");
         const { error } = await supabaseClient
             .from('aconteceu_go')
             .delete()
             .eq('id', id);
 
-        if (error) throw error;
-        alert("Notícia removida!");
+        if (error) {
+            console.error("Erro Supabase ao excluir:", error);
+            throw error;
+        }
+
+        console.log("Notícia excluída com sucesso do banco.");
+        alert("Notícia removida com sucesso!");
+        
+        // Atualiza as listas
         await carregarListaNoticiasHub();
-        if (window.carregarDashboard) window.carregarDashboard();
+        if (window.carregarDashboard) {
+            await window.carregarDashboard();
+        }
+        if (window.carregarAconteceu) {
+            await window.carregarAconteceu();
+        }
+        
     } catch (e) {
-        alert("Erro ao excluir. Tente novamente.");
+        console.error("Exceção capturada ao excluir:", e);
+        alert("Erro ao excluir a notícia: " + (e.message || "Erro desconhecido"));
     }
 };
 
