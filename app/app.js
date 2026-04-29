@@ -459,11 +459,20 @@ async function carregarAconteceu() {
             if (listaDesk) listaDesk.innerHTML = empty;
         } else {
             noticias.forEach(n => {
-                const dataExibicao = n.data_ocorrido ? new Date(n.data_ocorrido + 'T12:00:00').toLocaleDateString('pt-BR') : new Date(n.criado_em).toLocaleDateString('pt-BR');
-                const fotoMembro = n.membros?.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(n.membros?.nome || 'U')}&background=1E3A8A&color=fff`;
-                
                 let fotosArr = [];
-                try { fotosArr = typeof n.fotos === 'string' ? JSON.parse(n.fotos) : (n.fotos || []); } catch(e){}
+                let dataOcorridoMeta = null;
+                try { 
+                    const meta = typeof n.fotos === 'string' ? JSON.parse(n.fotos) : (n.fotos || []); 
+                    if (Array.isArray(meta)) {
+                        fotosArr = meta;
+                    } else if (meta && meta.urls) {
+                        fotosArr = meta.urls;
+                        dataOcorridoMeta = meta.data_ocorrido;
+                    }
+                } catch(e){}
+
+                const dataExibicao = dataOcorridoMeta ? new Date(dataOcorridoMeta + 'T12:00:00').toLocaleDateString('pt-BR') : new Date(n.criado_em).toLocaleDateString('pt-BR');
+                const fotoMembro = n.membros?.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(n.membros?.nome || 'U')}&background=1E3A8A&color=fff`;
                 
                 const reacoes = n.reacoes || [];
                 const userJaCurtiu = reacoes.some(r => r.membro_id === window.meuMembroId);

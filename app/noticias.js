@@ -54,7 +54,15 @@ async function carregarListaNoticiasHub() {
         }
 
         listaNoticiasCache.forEach(n => {
-            const dataStr = n.data_ocorrido ? new Date(n.data_ocorrido + 'T12:00:00').toLocaleDateString('pt-BR') : new Date(n.criado_em).toLocaleDateString('pt-BR');
+            // Extrair data dos metadados
+            let dataOcorridoMeta = null;
+            try {
+                const meta = typeof n.fotos === 'string' ? JSON.parse(n.fotos) : n.fotos;
+                if (meta && meta.data_ocorrido) dataOcorridoMeta = meta.data_ocorrido;
+            } catch(e){}
+
+            const dataStr = dataOcorridoMeta ? new Date(dataOcorridoMeta + 'T12:00:00').toLocaleDateString('pt-BR') : new Date(n.criado_em).toLocaleDateString('pt-BR');
+            
             const item = document.createElement('div');
             item.className = 'flex justify-between items-center';
             item.style.padding = '12px';
@@ -90,8 +98,6 @@ window.prepararEdicaoNoticia = function(id) {
 };
 
 window.prepararFormNoticia = function(modo) {
-    console.log("Preparando formulário de notícia:", modo);
-    
     try {
         const hub = document.getElementById('noticias-hub');
         const container = document.getElementById('form-noticia-container');
@@ -130,19 +136,28 @@ window.prepararFormNoticia = function(modo) {
             noticiaModo = 'edit';
             if (btnPub) btnPub.innerText = "Salvar Alterações";
             
-            document.getElementById('noticia-data-input').value = n.data_ocorrido || '';
+            let dataOcorrido = '';
+            let fotos = [];
+            try {
+                const meta = typeof n.fotos === 'string' ? JSON.parse(n.fotos) : n.fotos;
+                if (Array.isArray(meta)) {
+                    fotos = meta;
+                } else if (meta && meta.urls) {
+                    fotos = meta.urls;
+                    dataOcorrido = meta.data_ocorrido || '';
+                }
+            } catch(e){}
+
+            document.getElementById('noticia-data-input').value = dataOcorrido;
             document.getElementById('noticia-titulo-input').value = n.titulo || '';
             document.getElementById('noticia-texto-input').value = n.texto || '';
-            
-            let fotos = [];
-            try { fotos = typeof n.fotos === 'string' ? JSON.parse(n.fotos) : (n.fotos || []); } catch(e){}
             noticiasFotosBase64 = fotos;
             renderPreviewsNoticia();
         }
         atualizarContadorFotosNoticia();
     } catch(err) {
-        console.error("Falha crítica ao preparar formulário:", err);
-        alert("Erro ao abrir o editor. Verifique o console.");
+        console.error(err);
+        alert("Erro ao abrir o editor.");
     }
 };
 
@@ -161,7 +176,8 @@ window.excluirNoticia = async function(id) {
         await carregarListaNoticiasHub();
         if (window.carregarDashboard) window.carregarDashboard();
     } catch (e) {
-        alert("Erro ao excluir: " + e.message);
+        console.error("Erro ao excluir:", e);
+        alert("Erro ao excluir. Verifique sua conexão.");
     }
 };
 
@@ -197,7 +213,6 @@ function renderPreviewsNoticia() {
         const div = document.createElement('div');
         div.style.position = 'relative';
         div.style.width = '80px';
-        
         const isCapa = i === 0;
         div.innerHTML = `
             <img src="${src}" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid ${isCapa ? 'var(--primary-red)' : '#eee'};">
@@ -268,13 +283,18 @@ window.publicarNoticia = async function() {
     btn.innerText = "Salvando...";
 
     try {
+        // Solução: Guardar a data dentro do campo fotos como metadado, pois a coluna data_ocorrido não existe no banco
+        const meta = {
+            urls: noticiasFotosBase64,
+            data_ocorrido: dataOcorrido
+        };
+
         const dados = {
             grupo_id: window.meuGrupoId,
             membro_id: window.meuMembroId,
             titulo: titulo,
             texto: texto,
-            fotos: noticiasFotosBase64,
-            data_ocorrido: dataOcorrido
+            fotos: JSON.stringify(meta)
         };
 
         if (noticiaModo === 'edit' && noticiaIdEmEdicao) {
