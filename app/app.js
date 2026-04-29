@@ -769,6 +769,10 @@ function configurarNavegacao() {
                 alternarView('view-configuracoes');
                 if (typeof carregarConfiguracoes === 'function') carregarConfiguracoes();
             }
+            else if (label.includes('Relatórios')) {
+                alternarView('view-relatorios');
+                if (typeof carregarRelatorios === 'function') carregarRelatorios();
+            }
             
             // Marca ativo
             if (!label.includes('Sair')) {
@@ -828,7 +832,8 @@ window.alternarView = function(viewId) {
             'view-meus-pedidos': ['Pedidos'],
             'view-ata': ['Reunião de Núcleo'],
             'view-resumo-go': ['Resumo do GO'],
-            'view-tesouraria': ['Tesouraria']
+            'view-tesouraria': ['Tesouraria'],
+            'view-relatorios': ['Relatórios']
         };
         const activeLabels = menuLabels[viewId] || [];
 
