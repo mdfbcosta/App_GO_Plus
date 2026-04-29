@@ -452,9 +452,16 @@ window.expandirNoticia = function(id) {
     const txt = document.getElementById(`noticia-texto-${id}`);
     const btn = document.getElementById(`btn-mais-${id}`);
     if (txt) {
-        txt.style.webkitLineClamp = "unset";
-        txt.style.display = "block";
-        if (btn) btn.style.display = 'none';
+        const isExpanded = txt.style.webkitLineClamp === "unset";
+        if (isExpanded) {
+            txt.style.webkitLineClamp = "4";
+            txt.style.display = "-webkit-box";
+            if (btn) btn.innerText = "... mais";
+        } else {
+            txt.style.webkitLineClamp = "unset";
+            txt.style.display = "block";
+            if (btn) btn.innerText = " recolher";
+        }
     }
 };
 
@@ -590,9 +597,9 @@ window.carregarAconteceu = async function() {
                 </div>
 
                 <!-- Media Section (Fixed Height for Stability) -->
-                <div style="position: relative; width: 100%; height: 350px; background: #fafafa; overflow: hidden;">
+                <div style="position: relative; width: 100%; height: 350px; background: #fafafa; overflow: hidden; touch-action: pan-y;">
                     ${fotosArr.length > 0 ? `
-                        <div id="carousel-${n.id}" class="hide-scrollbar" onscroll="window.handleCarouselScroll('${n.id}', ${fotosArr.length})" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100%; height: 100%; scroll-behavior: smooth;">
+                        <div id="carousel-${n.id}" class="hide-scrollbar" onscroll="window.handleCarouselScroll('${n.id}', ${fotosArr.length})" style="display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; width: 100%; height: 100%; scroll-behavior: smooth;">
                             ${fotosArr.map(f => `
                                 <div style="flex: 0 0 100%; width: 100%; height: 100%; scroll-snap-align: start;">
                                     <img src="${f}" style="width:100%; height:100%; object-fit:cover;">
