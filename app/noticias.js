@@ -104,12 +104,9 @@ window.prepararEdicaoNoticia = function(id) {
 
 window.excluirNoticia = async function(id) {
     console.log("Iniciando exclusão da notícia ID:", id);
-    if (!id) {
-        console.error("ID da notícia não fornecido.");
-        return;
-    }
+    if (!id) return;
 
-    const confirmacao = confirm("Tem certeza que deseja excluir permanentemente esta notícia?");
+    const confirmacao = await window.confirmarAcao("Excluir Notícia?", "Tem certeza que deseja remover esta notícia permanentemente?", "🗑️");
     if (!confirmacao) return;
 
     try {

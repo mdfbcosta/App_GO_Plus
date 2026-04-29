@@ -1419,6 +1419,19 @@
                 </form>
             </div>
         </div>
+
+        <!-- Modal de Confirmação Customizado (Substitui confirm) -->
+        <div id="modal-confirm" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center; backdrop-filter: blur(2px);">
+            <div class="card" style="width: 90%; max-width: 320px; text-align: center; padding: 25px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);">
+                <div id="confirm-icon" style="font-size: 3rem; margin-bottom: 15px;">⚠️</div>
+                <h3 id="confirm-title" style="color: var(--primary-blue); margin-bottom: 10px; font-size: 1.1rem;">Tem certeza?</h3>
+                <p id="confirm-text" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5;">Esta ação não poderá ser desfeita.</p>
+                <div class="flex gap-3">
+                    <button id="btn-confirm-cancel" class="btn btn-outline" style="flex:1; padding: 10px; font-size: 0.8rem;">Cancelar</button>
+                    <button id="btn-confirm-yes" class="btn btn-primary" style="flex:1; padding: 10px; font-size: 0.8rem; background: var(--primary-red);">Excluir</button>
+                </div>
+            </div>
+        </div>
     </main>
 </div>
 

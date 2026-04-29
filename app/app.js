@@ -471,6 +471,43 @@ window.compartilharNoticia = function(id) {
     }
 };
 
+// Helper: Confirmação Customizada Assíncrona
+window.confirmarAcao = function(titulo, texto, icon = '⚠️') {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('modal-confirm');
+        const t = document.getElementById('confirm-title');
+        const p = document.getElementById('confirm-text');
+        const ic = document.getElementById('confirm-icon');
+        const btnYes = document.getElementById('btn-confirm-yes');
+        const btnNo = document.getElementById('btn-confirm-cancel');
+
+        if (!modal) return resolve(confirm(texto)); // Fallback
+
+        t.innerText = titulo;
+        p.innerText = texto;
+        ic.innerText = icon;
+        modal.style.display = 'flex';
+
+        const handleYes = () => {
+            modal.style.display = 'none';
+            cleanup();
+            resolve(true);
+        };
+        const handleNo = () => {
+            modal.style.display = 'none';
+            cleanup();
+            resolve(false);
+        };
+        const cleanup = () => {
+            btnYes.removeEventListener('click', handleYes);
+            btnNo.removeEventListener('click', handleNo);
+        };
+
+        btnYes.addEventListener('click', handleYes);
+        btnNo.addEventListener('click', handleNo);
+    });
+};
+
 // Delegated Listener Global para Notícias
 document.addEventListener('click', (e) => {
     // Excluir
