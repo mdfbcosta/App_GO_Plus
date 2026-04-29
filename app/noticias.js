@@ -10,7 +10,7 @@ let listaNoticiasCache = [];
 // --- HUB E NAVEGAÇÃO ---
 
 window.mostrarHubNoticias = async function() {
-    console.log("Abrindo Hub de Notícias...");
+    console.log("DEBUG: Abrindo Hub de Notícias...");
     const hub = document.getElementById('noticias-hub');
     const container = document.getElementById('form-noticia-container');
     const btnVoltar = document.getElementById('btn-voltar-noticias-hub');
@@ -34,6 +34,7 @@ async function carregarListaNoticiasHub() {
     if (!container) return;
 
     try {
+        console.log("DEBUG: Carregando lista de notícias...");
         const umMesAtras = new Date();
         umMesAtras.setDate(umMesAtras.getDate() - 30);
 
@@ -54,7 +55,6 @@ async function carregarListaNoticiasHub() {
         }
 
         listaNoticiasCache.forEach(n => {
-            // Extrair data dos metadados
             let dataOcorridoMeta = null;
             try {
                 const meta = typeof n.fotos === 'string' ? JSON.parse(n.fotos) : n.fotos;
@@ -70,28 +70,33 @@ async function carregarListaNoticiasHub() {
             item.style.borderRadius = '10px';
             item.style.border = '1px solid #e2e8f0';
             
+            // Usando ID no botão para facilitar a delegação se necessário, mas mantendo onclick por compatibilidade rápida
             item.innerHTML = `
-                <div style="flex: 1; min-width: 0;">
+                <div style="flex: 1; min-width: 0; pointer-events: none;">
                     <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-blue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${n.titulo || 'Sem título'}</div>
                     <div style="font-size: 0.7rem; color: var(--text-muted);">📅 ${dataStr}</div>
                 </div>
                 <div class="flex gap-2" style="margin-left: 10px;">
-                    <button onclick="prepararEdicaoNoticia('${n.id}')" style="background:none; border:none; color:var(--primary-blue); font-size:1.1rem; cursor:pointer;" title="Editar">✏️</button>
-                    <button onclick="excluirNoticia('${n.id}')" style="background:none; border:none; color:var(--primary-red); font-size:1.1rem; cursor:pointer;" title="Excluir">🗑️</button>
+                    <button type="button" onclick="window.prepararEdicaoNoticia('${n.id}')" style="background:none; border:none; color:var(--primary-blue); font-size:1.1rem; cursor:pointer; padding:5px;" title="Editar">✏️</button>
+                    <button type="button" onclick="window.excluirNoticia('${n.id}')" style="background:none; border:none; color:var(--primary-red); font-size:1.1rem; cursor:pointer; padding:5px;" title="Excluir">🗑️</button>
                 </div>
             `;
             container.appendChild(item);
         });
 
     } catch (e) {
-        console.error("Erro ao carregar lista de notícias:", e);
+        console.error("DEBUG: Erro ao carregar lista:", e);
         container.innerHTML = '<p style="color: var(--primary-red); font-size: 0.8rem; text-align: center;">Erro ao carregar histórico.</p>';
     }
 }
 
 window.prepararEdicaoNoticia = function(id) {
-    const noticia = listaNoticiasCache.find(n => n.id === id);
-    if (!noticia) return;
+    console.log("DEBUG: Preparando edição para ID:", id);
+    const noticia = listaNoticiasCache.find(n => n.id == id);
+    if (!noticia) {
+        console.error("DEBUG: Notícia não encontrada no cache para ID:", id);
+        return;
+    }
 
     window.noticiaParaEditarCache = noticia;
     prepararFormNoticia('edit_specific');
@@ -162,6 +167,7 @@ window.prepararFormNoticia = function(modo) {
 };
 
 window.excluirNoticia = async function(id) {
+    console.log("DEBUG: Solicitando exclusão da notícia ID:", id);
     if (!confirm("Tem certeza que deseja excluir esta notícia permanentemente?")) return;
 
     try {
@@ -171,13 +177,14 @@ window.excluirNoticia = async function(id) {
             .eq('id', id);
 
         if (error) throw error;
+        console.log("DEBUG: Notícia excluída com sucesso!");
         alert("Notícia excluída!");
         
         await carregarListaNoticiasHub();
         if (window.carregarDashboard) window.carregarDashboard();
     } catch (e) {
-        console.error("Erro ao excluir:", e);
-        alert("Erro ao excluir. Verifique sua conexão.");
+        console.error("DEBUG: Erro na exclusão:", e);
+        alert("Erro ao excluir. Tente novamente.");
     }
 };
 
@@ -283,7 +290,6 @@ window.publicarNoticia = async function() {
     btn.innerText = "Salvando...";
 
     try {
-        // Solução: Guardar a data dentro do campo fotos como metadado, pois a coluna data_ocorrido não existe no banco
         const meta = {
             urls: noticiasFotosBase64,
             data_ocorrido: dataOcorrido
