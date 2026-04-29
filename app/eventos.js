@@ -125,8 +125,8 @@ window.carregarMesesTabs = function() {
 
 window.carregarEventos = async function(mesIndex) {
     if (!window.meuGrupoId) return;
-    const btnNovo = document.getElementById('btn-novo-evento');
-    if (btnNovo) btnNovo.style.display = (window.meuCargo === 'Participante') ? 'none' : 'block';
+    const temPermissao = (window.meuCargo && (window.meuCargo.includes('Coordenador') || window.meuCargo.includes('Secretário')));
+    if (btnNovo) btnNovo.style.display = temPermissao ? 'block' : 'none';
 
     try {
         const ano = new Date().getFullYear();
@@ -180,7 +180,7 @@ window.carregarEventos = async function(mesIndex) {
                     
                     <div class="flex gap-2" style="margin-top:15px;">
                         ${meta.link ? `<a href="${meta.link}" target="_blank" class="btn btn-primary" style="flex:1; font-size:0.7rem; padding:8px;">🔗 Inscrição / Info</a>` : ''}
-                        ${window.meuCargo !== 'Participante' ? `
+                        ${(window.meuCargo && (window.meuCargo.includes('Coordenador') || window.meuCargo.includes('Secretário'))) ? `
                             <button onclick="prepararEdicaoEvento('${ev.id}')" class="btn btn-outline" style="font-size:0.7rem; padding:8px;">✏️ Editar</button>
                             <button onclick="excluirEvento('${ev.id}')" class="btn btn-outline" style="color:red; font-size:0.7rem; padding:8px;">🗑️</button>
                         ` : ''}

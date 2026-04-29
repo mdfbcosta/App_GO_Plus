@@ -1016,7 +1016,7 @@ async function carregarEventosHome() {
         eventos.forEach(ev => {
             const data = new Date(ev.data_hora).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
             container.innerHTML += `
-                <div style="padding: 10px; background: #f8fafc; border-radius: 8px; border-left: 4px solid var(--primary-blue); margin-bottom:8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <div onclick="alternarView('view-eventos')" style="padding: 10px; background: #f8fafc; border-radius: 8px; border-left: 4px solid var(--primary-blue); margin-bottom:8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor:pointer;">
                     <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-blue);">${ev.titulo}</div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">📅 ${data} • 📍 ${ev.local_evento || 'GO+'}</div>
                 </div>
