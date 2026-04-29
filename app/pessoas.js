@@ -13,7 +13,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (formPessoa) {
         formPessoa.addEventListener('submit', salvarPessoa);
     }
+
+    // Fechar popovers ao clicar fora
+    window.addEventListener('click', (e) => {
+        if (!e.target.closest('.contato-popover') && !e.target.closest('.btn-contato')) {
+            document.querySelectorAll('.contato-popover').forEach(p => p.style.display = 'none');
+        }
+    });
 });
+
+window.toggleContato = function(id, event) {
+    if (event) event.stopPropagation();
+    const el = document.getElementById(`contato-info-${id}`);
+    const isVisible = el.style.display === 'block';
+    
+    // Fecha todos
+    document.querySelectorAll('.contato-popover').forEach(p => p.style.display = 'none');
+    
+    // Se não estava visível, abre este
+    if (!isVisible) {
+        el.style.display = 'block';
+    }
+}
 
 async function carregarPessoas() {
     if (!window.meuGrupoId) return;
@@ -82,20 +103,25 @@ async function carregarPessoas() {
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <div id="contato-info-${m.id}" style="display:none; position:absolute; right:60px; background:white; border:1px solid #eee; padding:8px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:10; text-align:center;">
-                        <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 5px;">${telExibicao}</div>
+                    <div id="contato-info-${m.id}" class="contato-popover" style="display:none; position:absolute; right:60px; background:white; border:1px solid #eee; padding:10px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,0.12); z-index:100; text-align:center; min-width: 120px;">
+                        <div style="font-size: 0.8rem; font-weight: 800; color: var(--primary-blue); margin-bottom: 8px;">${telExibicao}</div>
                         <div class="flex gap-4 justify-center">
                             ${telBruto ? `
-                                <a href="${linkZap}" target="_blank" style="text-decoration:none; font-size: 1.2rem;">🟢</a>
-                                <a href="${linkTel}" style="text-decoration:none; font-size: 1.2rem;">📞</a>
+                                <a href="${linkZap}" target="_blank" style="text-decoration:none;">
+                                    <img src="assets/icons/icon-whatsapp.png" style="width:28px; height:28px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                                </a>
+                                <a href="${linkTel}" style="text-decoration:none;">
+                                    <div style="width:28px; height:28px; background:#f1f5f9; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem;">📞</div>
+                                </a>
                             ` : '<span style="font-size:0.6rem; color:#999;">Sem número</span>'}
                         </div>
                     </div>
-                    <button onclick="document.getElementById('contato-info-${m.id}').style.display = document.getElementById('contato-info-${m.id}').style.display === 'none' ? 'block' : 'none'" 
-                            style="background:#f1f5f9; border:none; color:var(--primary-blue); cursor:pointer; font-size:1rem; width:35px; height:35px; border-radius:50%; display:flex; items-center; justify-content:center;" title="Contato">
-                        📇
+                    <button onclick="toggleContato('${m.id}', event)" class="btn-contato"
+                            style="background:#f8fafc; border:1px solid #e2e8f0; cursor:pointer; width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; transition: all 0.2s;" 
+                            onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                        <img src="assets/icons/icon-chat.png" style="width:24px; height:24px; opacity: 0.8;">
                     </button>
-                    <button onclick="removerMembro('${m.id}', '${m.nome}')" style="background:none; border:none; color:var(--primary-red); cursor:pointer; font-size:1.1rem; padding: 5px;" title="Remover">🗑️</button>
+                    <button onclick="removerMembro('${m.id}', '${m.nome}')" style="background:none; border:none; color:var(--primary-red); cursor:pointer; font-size:1.1rem; padding: 5px; opacity: 0.6;" title="Remover">🗑️</button>
                 </div>
             `;
 
