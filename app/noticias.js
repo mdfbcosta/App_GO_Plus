@@ -78,18 +78,18 @@ async function carregarListaNoticiasHub() {
                     <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-blue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${n.titulo || 'Sem título'}</div>
                     <div style="font-size: 0.7rem; color: var(--text-muted);">📅 ${dataStr}</div>
                 </div>
-                <div class="flex gap-2">
-                    <button type="button" class="btn-edit" data-id="${n.id}" style="background:none; border:none; color:var(--primary-blue); font-size:1.2rem; cursor:pointer; padding:8px;">✏️</button>
-                    <button type="button" class="btn-delete" data-id="${n.id}" style="background:none; border:none; color:var(--primary-red); font-size:1.2rem; cursor:pointer; padding:8px;">🗑️</button>
+                <div class="flex gap-2" style="margin-left: 10px;">
+                    <button type="button" class="btn-edit-noticia" data-id="${n.id}" style="background:none; border:none; color:var(--primary-blue); font-size:1.2rem; cursor:pointer; padding:8px;" title="Editar">✏️</button>
+                    <button type="button" class="btn-delete-noticia" data-id="${n.id}" style="background:none; border:none; color:var(--primary-red); font-size:1.2rem; cursor:pointer; padding:8px;" title="Excluir">🗑️</button>
                 </div>
             `;
             
-            // Event Listeners Diretos (Mais robusto que onclick string)
-            const bEdit = item.querySelector('.btn-edit');
-            const bDel = item.querySelector('.btn-delete');
+            // Event Listeners Diretos (Reforço)
+            const bEdit = item.querySelector('.btn-edit-noticia');
+            const bDel = item.querySelector('.btn-delete-noticia');
             
-            bEdit.onclick = () => window.prepararEdicaoNoticia(n.id);
-            bDel.onclick = () => window.excluirNoticia(n.id);
+            if (bEdit) bEdit.onclick = (e) => { e.preventDefault(); window.prepararEdicaoNoticia(n.id); };
+            if (bDel) bDel.onclick = (e) => { e.preventDefault(); window.excluirNoticia(n.id); };
 
             container.appendChild(item);
         });

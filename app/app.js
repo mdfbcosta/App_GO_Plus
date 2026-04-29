@@ -467,19 +467,17 @@ window.compartilharNoticia = function(id) {
 
 // Delegated Listener Global para Excluir Notícia (Resolução definitiva)
 document.addEventListener('click', (e) => {
-    // Procura o botão de excluir ou qualquer ícone dentro dele
-    const btnDel = e.target.closest('button[onclick*="excluirNoticia"]');
+    // Procura por qualquer elemento que tenha a classe btn-delete-noticia ou esteja dentro de um
+    const btnDel = e.target.closest('.btn-delete-noticia');
     if (btnDel) {
-        // Extrai o ID do atributo onclick
-        const match = btnDel.getAttribute('onclick').match(/'([^']+)'/);
-        if (match && match[1]) {
-            const id = match[1];
-            console.log("Global Catch: Excluindo", id);
-            if (typeof window.excluirNoticia === 'function') {
-                e.preventDefault();
-                e.stopPropagation();
-                window.excluirNoticia(id);
-            }
+        const id = btnDel.getAttribute('data-id');
+        console.log("Global Catch: Excluindo notícia ID", id);
+        if (typeof window.excluirNoticia === 'function') {
+            e.preventDefault();
+            e.stopPropagation();
+            window.excluirNoticia(id);
+        } else {
+            console.error("Módulo de notícias não carregado.");
         }
     }
 });
@@ -553,27 +551,22 @@ window.carregarAconteceu = async function() {
                 </div>
 
                 <!-- Actions Bar -->
-                <div class="flex gap-4" style="padding: 12px 12px 8px 12px;">
-                    <button onclick="window.reagirNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer;">
+                <div class="flex items-center gap-3" style="padding: 12px 12px 8px 12px;">
+                    <button onclick="window.reagirNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; gap:6px;">
                         <span id="noticia-like-icon-${n.id}" style="font-size: 1.5rem; color: ${userJaCurtiu ? '#ed4956' : '#262626'}">${userJaCurtiu ? '❤️' : '🤍'}</span>
+                        <span id="noticia-like-count-${n.id}" style="font-size: 0.9rem; font-weight: 700; color: #262626;">${reacoes.length}</span>
                     </button>
-                    <button onclick="window.compartilharNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer;">
+                    <button onclick="window.compartilharNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; margin-left: 10px;">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
                     </button>
                 </div>
 
-                <!-- Likes -->
-                <div style="padding: 0 12px; font-size: 0.85rem; font-weight: 700; color: #262626; margin-bottom: 4px;">
-                    <span id="noticia-like-count-${n.id}">${reacoes.length}</span> curtidas
-                </div>
-
                 <!-- Caption -->
-                <div style="padding: 0 12px 15px 12px; font-size: 0.85rem; line-height: 1.4; color: #262626;">
-                    <span style="font-weight: 700; margin-right: 5px;">${n.membros?.nome || 'GO+'}</span>
-                    <span id="noticia-texto-${n.id}" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                        ${n.titulo ? `<strong>${n.titulo}</strong> - ` : ''}${n.texto}
+                <div style="padding: 0 12px 15px 12px; font-size: 0.9rem; line-height: 1.4; color: #262626;">
+                    <span id="noticia-texto-${n.id}" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                        ${n.titulo ? `<strong>${n.titulo}</strong><br>` : ''}${n.texto}
                     </span>
-                    ${n.texto.length > 80 ? `<span id="btn-mais-${n.id}" onclick="window.expandirNoticia('${n.id}')" style="color: #8e8e8e; cursor: pointer; margin-left: 5px;">... mais</span>` : ''}
+                    ${n.texto.length > 100 ? `<span id="btn-mais-${n.id}" onclick="window.expandirNoticia('${n.id}')" style="color: #8e8e8e; cursor: pointer; margin-left: 5px; font-weight:600;">... mais</span>` : ''}
                 </div>
             </div>
             `;
