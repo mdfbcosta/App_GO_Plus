@@ -68,7 +68,7 @@
                 <a href="#" class="menu-mobile-item" data-view="view-resumo-go" onclick="clickMenuMobile('view-resumo-go')">📖 Resumo do GO</a>
                 <a href="#" class="menu-mobile-item" data-view="view-tesouraria" onclick="clickMenuMobile('view-tesouraria')">💰 Tesouraria</a>
                 <a href="#" id="menu-mobile-ata" class="menu-mobile-item" data-view="view-ata" onclick="clickMenuMobile('view-ata')">📋 Reunião de Núcleo</a>
-                <a href="#" class="menu-mobile-item" data-view="view-pessoas" onclick="clickMenuMobile('view-pessoas')">👥 Pessoas</a>
+                <a href="#" class="menu-mobile-item" data-view="view-pessoas" onclick="clickMenuMobile('view-pessoas')">👥 Membros do GO</a>
                 <a href="#" class="menu-mobile-item" data-view="view-pedidos" onclick="clickMenuMobile('view-pedidos')">🙏 Pedidos de Oração</a>
                 <a href="#" class="menu-mobile-item" data-view="view-relatorios" onclick="clickMenuMobile('view-relatorios')">📊 Relatórios</a>
                 <a href="#" class="menu-mobile-item" data-view="view-configuracoes" onclick="clickMenuMobile('view-configuracoes')">⚙️ Configurações</a>
@@ -100,7 +100,7 @@
                 <a href="#" class="sidebar-item">📖 Resumo do GO</a>
                 <a href="#" class="sidebar-item">💰 Tesouraria</a>
                 <a href="#" id="sidebar-item-ata" class="sidebar-item" data-view="view-ata" onclick="alternarView('view-ata')">📋 Reunião de Núcleo</a>
-                <a href="#" class="sidebar-item">👥 Pessoas</a>
+                <a href="#" class="sidebar-item" data-view="view-pessoas" onclick="alternarView('view-pessoas')">👥 Membros do GO</a>
                 <a href="#" class="sidebar-item">🙏 Pedidos de Oração</a>
                 <a href="#" class="sidebar-item">📊 Relatórios</a>
                 <a href="#" class="sidebar-item">⚙️ Configurações</a>
@@ -461,19 +461,22 @@
                     <button class="btn btn-primary" onclick="abrirModalPessoa()">+ Novo Membro</button>
                 </div>
                 
-                <div class="card">
-                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-                        <thead>
-                            <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
-                                <th style="padding: 10px;">Nome</th>
-                                <th style="padding: 10px;">Cargo / Função</th>
-                                <th style="padding: 10px;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lista-pessoas">
-                            <!-- Carregados via JS -->
-                        </tbody>
-                    </table>
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: var(--primary-blue); font-size: 1.1rem; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        🛡️ Servos do GO
+                    </h3>
+                    <div id="lista-servos" class="flex-col gap-3">
+                        <!-- Carregados via JS -->
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        🐑 Demais ovelhas
+                    </h3>
+                    <div id="lista-ovelhas" class="flex-col gap-3">
+                        <!-- Carregados via JS -->
+                    </div>
                 </div>
             </div> <!-- Fim View Pessoas -->
 

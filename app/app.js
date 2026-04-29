@@ -121,7 +121,7 @@ async function carregarPerfilUsuario(user) {
                 const p = window.minhasPermissoes;
 
                 const mapeamentoSidebar = {
-                    'Pessoas': p.pessoas,
+                    'Membros': p.pessoas,
                     'Ata': p.ata,
                     'Configurações': p.configuracoes,
                     'Relatórios': p.metricas,
@@ -142,7 +142,7 @@ async function carregarPerfilUsuario(user) {
                     }
 
                     for (const [menuName, permissao] of Object.entries(mapeamentoSidebar)) {
-                        if (txt.includes(menuName) || (menuName === 'Ata' && txt.includes('Núcleo'))) {
+                        if (txt.includes(menuName) || (menuName === 'Ata' && txt.includes('Núcleo')) || (menuName === 'Membros' && txt.includes('Membros'))) {
                             if (permissao === 'nenhum') {
                                 item.style.display = 'none';
                             } else {

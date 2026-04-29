@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navItems = document.querySelectorAll('.sidebar-item, .nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
-            if (e.target.innerText.includes('Pessoas')) {
+            if (e.target.innerText.includes('Membros')) {
                 carregarPessoas();
             }
         });
@@ -27,41 +27,60 @@ async function carregarPessoas() {
 
         if (error) throw error;
 
-        const lista = document.getElementById('lista-pessoas');
-        if (!lista) return;
+        const containerServos = document.getElementById('lista-servos');
+        const containerOvelhas = document.getElementById('lista-ovelhas');
+        if (!containerServos || !containerOvelhas) return;
 
-        lista.innerHTML = '';
+        containerServos.innerHTML = '';
+        containerOvelhas.innerHTML = '';
 
         if (membros.length === 0) {
-            lista.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-muted);">Nenhum membro cadastrado.</td></tr>';
+            containerOvelhas.innerHTML = '<div class="card text-center"><p style="color:var(--text-muted);">Nenhum membro cadastrado.</p></div>';
             return;
         }
 
         membros.forEach(m => {
-            const tr = document.createElement('tr');
-            tr.style.borderBottom = '1px solid var(--border-color)';
+            const card = document.createElement('div');
+            card.className = 'card flex justify-between items-center';
+            card.style.padding = '12px 15px';
+            card.style.marginBottom = '0'; // Usando gap do flex-col
             
             const foto = m.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.nome)}&background=1E3A8A&color=fff`;
 
-            tr.innerHTML = `
-                <td style="padding: 12px 10px;">
-                    <div class="flex items-center gap-2">
-                        <img src="${foto}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
-                        <span style="font-weight: 500;">${m.nome}</span>
+            // Define se é servo ou ovelha
+            // É servo se tiver qualquer cargo que NÃO seja 'Participante'
+            const ehServo = m.cargo && m.cargo !== 'Participante';
+
+            card.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <img src="${foto}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border: 2px solid #f1f5f9;">
+                    <div>
+                        <div style="font-weight: 700; color: var(--primary-blue); font-size: 0.95rem;">${m.nome}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">${m.cargo || 'Participante'}</div>
                     </div>
-                </td>
-                <td style="padding: 12px 10px; color: var(--text-muted); font-size: 0.85rem;">${m.cargo}</td>
-                <td style="padding: 12px 10px;">
-                    <span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">
+                </div>
+                <div class="flex items-center gap-2">
+                    <span style="background: ${m.status === 'Ativo' ? '#dcfce7' : '#fee2e2'}; color: ${m.status === 'Ativo' ? '#166534' : '#991b1b'}; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">
                         ${m.status}
                     </span>
-                </td>
-                <td style="padding: 12px 10px; text-align:right;">
-                    <button onclick="removerMembro('${m.id}', '${m.nome}')" style="background:none; border:none; color:var(--primary-red); cursor:pointer; font-size:1.1rem;" title="Remover">🗑️</button>
-                </td>
+                    <button onclick="removerMembro('${m.id}', '${m.nome}')" style="background:none; border:none; color:var(--primary-red); cursor:pointer; font-size:1.1rem; padding: 5px;" title="Remover">🗑️</button>
+                </div>
             `;
-            lista.appendChild(tr);
+
+            if (ehServo) {
+                containerServos.appendChild(card);
+            } else {
+                containerOvelhas.appendChild(card);
+            }
         });
+
+        // Verificação se um dos blocos está vazio
+        if (containerServos.innerHTML === '') {
+            containerServos.innerHTML = '<p style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:10px;">Nenhum servo listado.</p>';
+        }
+        if (containerOvelhas.innerHTML === '') {
+            containerOvelhas.innerHTML = '<p style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:10px;">Nenhuma ovelha listada.</p>';
+        }
 
     } catch (err) {
         console.error("Erro ao carregar pessoas:", err);
