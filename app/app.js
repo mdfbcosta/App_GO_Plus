@@ -542,9 +542,9 @@ window.carregarAconteceu = async function() {
             const userJaCurtiu = reacoes.some(r => r.membro_id === window.meuMembroId);
             
             html += `
-            <div class="insta-post" style="display: flex; flex-direction: column; background: #fff; border: 1px solid #eee; border-radius: 12px; margin-bottom: 15px; overflow: hidden; box-shadow: var(--shadow-sm);">
+            <div class="insta-post" style="background: #fff; border-bottom: 8px solid #f0f2f5; display: block; width: 100%;">
                 <!-- Header -->
-                <div class="flex items-center gap-3" style="padding: 12px; flex-shrink: 0;">
+                <div class="flex items-center gap-3" style="padding: 12px;">
                     <img src="${fotoMembro}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border: 1px solid #dbdbdb;">
                     <div class="flex flex-col">
                         <span style="font-size: 0.85rem; font-weight:700; color:#262626;">${n.membros?.nome || 'GO+'}</span>
@@ -552,8 +552,8 @@ window.carregarAconteceu = async function() {
                     </div>
                 </div>
 
-                <!-- Media Section (Carousel Clean) -->
-                <div style="position: relative; width: 100%; aspect-ratio: 1/1; background: #fafafa; overflow: hidden; flex-shrink: 0;">
+                <!-- Media Section (Fixed Height for Stability) -->
+                <div style="position: relative; width: 100%; height: 350px; background: #fafafa; overflow: hidden;">
                     ${fotosArr.length > 0 ? `
                         <div id="carousel-${n.id}" class="hide-scrollbar" onscroll="window.handleCarouselScroll('${n.id}', ${fotosArr.length})" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100%; height: 100%; scroll-behavior: smooth;">
                             ${fotosArr.map(f => `
@@ -563,17 +563,15 @@ window.carregarAconteceu = async function() {
                             `).join('')}
                         </div>
                         
-                        <!-- Selo de Data (Minimalista) -->
+                        <!-- Selo de Data -->
                         <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.6rem; font-weight: 600; z-index: 10; backdrop-filter: blur(4px);">
                             Aconteceu em ${dataOcorridoStr}
                         </div>
 
-                        <!-- Setas (Desktop Only via CSS class) -->
                         ${fotosArr.length > 1 ? `
-                            <button class="carousel-arrow" onclick="document.getElementById('carousel-${n.id}').scrollBy({left: -document.getElementById('carousel-${n.id}').offsetWidth, behavior: 'smooth'})" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; z-index: 11; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">&lt;</button>
-                            <button class="carousel-arrow" onclick="document.getElementById('carousel-${n.id}').scrollBy({left: document.getElementById('carousel-${n.id}').offsetWidth, behavior: 'smooth'})" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; z-index: 11; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">&gt;</button>
+                            <button class="carousel-arrow" onclick="document.getElementById('carousel-${n.id}').scrollBy({left: -document.getElementById('carousel-${n.id}').offsetWidth, behavior: 'smooth'})" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; z-index: 11;">&lt;</button>
+                            <button class="carousel-arrow" onclick="document.getElementById('carousel-${n.id}').scrollBy({left: document.getElementById('carousel-${n.id}').offsetWidth, behavior: 'smooth'})" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; z-index: 11;">&gt;</button>
                             
-                            <!-- Dots Indicators -->
                             <div style="position: absolute; bottom: 10px; left: 0; width: 100%; display: flex; justify-content: center; gap: 4px; z-index: 12;">
                                 ${fotosArr.map((_, i) => `<div id="dot-${n.id}-${i}" class="insta-dot ${i === 0 ? 'active' : ''}"></div>`).join('')}
                             </div>
@@ -584,22 +582,22 @@ window.carregarAconteceu = async function() {
                 </div>
 
                 <!-- Actions & Caption -->
-                <div style="padding: 10px 12px; background: white; flex: 1; display: flex; flex-direction: column;">
-                    <div class="flex items-center gap-3" style="margin-bottom: 6px; flex-shrink: 0;">
+                <div style="padding: 12px; background: white;">
+                    <div class="flex items-center gap-3" style="margin-bottom: 10px;">
                         <button onclick="window.reagirNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; gap:5px;">
                             <span id="noticia-like-icon-${n.id}" style="font-size: 1.3rem; color: ${userJaCurtiu ? '#ed4956' : '#262626'}">${userJaCurtiu ? '❤️' : '🤍'}</span>
                             <span id="noticia-like-count-${n.id}" style="font-size: 0.85rem; font-weight: 700; color: #262626;">${reacoes.length}</span>
                         </button>
-                        <button onclick="window.compartilharNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; margin-left: 5px;">
+                        <button onclick="window.compartilharNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
                         </button>
                     </div>
 
                     <div style="font-size: 0.85rem; line-height: 1.4; color: #262626;">
                         <div id="noticia-texto-${n.id}" style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;">
-                            ${n.titulo ? `<strong style="display:block; margin-bottom:2px; font-size: 0.95rem; color: #1e293b;">${n.titulo}</strong>` : ''}${n.texto}
+                            ${n.titulo ? `<strong style="display:block; margin-bottom:4px; font-size: 0.95rem; color: #1e293b;">${n.titulo}</strong>` : ''}${n.texto}
                         </div>
-                        ${n.texto.length > 80 ? `<span id="btn-mais-${n.id}" onclick="window.expandirNoticia('${n.id}')" style="color: #8e8e8e; cursor: pointer; font-weight:600; font-size:0.75rem;">... mais</span>` : ''}
+                        ${n.texto.length > 80 ? `<span id="btn-mais-${n.id}" onclick="window.expandirNoticia('${n.id}')" style="color: #8e8e8e; cursor: pointer; font-weight:600; font-size:0.75rem; display: inline-block; margin-top: 4px;">... mais</span>` : ''}
                     </div>
                 </div>
             </div>
