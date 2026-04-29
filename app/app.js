@@ -3,7 +3,7 @@
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("🚀 GO+ Versão: 2.0 (Deploy Vercel OK)");
+    console.log("🚀 GO+ Versão: 2.3 (Deploy Vercel OK)");
     console.log("🕊️ Unidade e Tecnologia a serviço da RCC.");
 
     // 1. VERIFICAR AUTENTICAÇÃO
@@ -152,204 +152,64 @@ async function carregarPerfilUsuario(user) {
                         }
                     }
                 });
-
-                await carregarCoordenadorInfo();
-
-                // RBAC Notícias
-                const btnPostarNoticia = document.getElementById('btn-add-aconteceu');
-                const btnPostarNoticiaDesk = document.getElementById('desktop-btn-add-aconteceu');
-                if (membro.cargo === 'Coordenador' || membro.cargo === 'Ministério de Comunicação') {
-                    if (btnPostarNoticia) btnPostarNoticia.style.display = 'block';
-                    if (btnPostarNoticiaDesk) btnPostarNoticiaDesk.style.display = 'block';
-                }
-            } else {
-                console.error("Usuário sem perfil de membro. Redirecionando.");
-                await supabaseClient.auth.signOut();
-                window.location.href = '../index.html';
-            }
-
-    } catch (err) {
-        console.error("Erro ao carregar perfil:", err);
-    }
-}
-
-async function carregarIntencoesPresenca(dataGO) {
-    if (!dataGO || !window.meuGrupoId) return;
-    
-    try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        if (!user) return;
-        
-        // Quantidade total
-        const { count, error } = await supabaseClient
-            .from('intencoes_presenca')
-            .select('*', { count: 'exact', head: true })
-            .eq('grupo_id', window.meuGrupoId)
-            .eq('data_reuniao', dataGO);
-            
-        // Eu já confirmei?
-        const { data: minhaIntencao } = await supabaseClient
-            .from('intencoes_presenca')
-            .select('id')
-            .eq('grupo_id', window.meuGrupoId)
-            .eq('data_reuniao', dataGO)
-            .eq('membro_id', window.meuMembroId)
-            .single();
-
-        const btnMob = document.getElementById('mobile-btn-euvou');
-        const btnDesk = document.getElementById('desktop-btn-euvou');
-        const textMob = document.getElementById('mobile-intencoes-count');
-        const textDesk = document.getElementById('desktop-intencoes-count');
-
-        window.userJaConfirmouIntencao = minhaIntencao ? true : false;
-
-        if (btnMob) {
-            btnMob.innerText = minhaIntencao ? "✓" : "✋ Eu vou!";
-            btnMob.style.setProperty('background-color', minhaIntencao ? '#16a34a' : 'var(--primary-red)', 'important');
-            btnMob.style.minWidth = minhaIntencao ? "40px" : "100px";
-            btnMob.style.width = minhaIntencao ? "40px" : "auto";
-            btnMob.disabled = false;
         }
-        if (btnDesk) {
-            btnDesk.innerText = minhaIntencao ? "✓" : "✋ Eu vou!";
-            btnDesk.style.setProperty('background-color', minhaIntencao ? '#16a34a' : 'var(--primary-red)', 'important');
-            btnDesk.style.minWidth = minhaIntencao ? "40px" : "100px";
-            btnDesk.style.width = minhaIntencao ? "40px" : "auto";
-            btnDesk.disabled = false;
-        }
-
-        let txt = "";
-        if (count > 0 && minhaIntencao) {
-            if (count === 1) {
-                txt = `Parabéns! Você foi a primeira pessoa a confirmar presença.`;
-            } else {
-                txt = `Você e mais ${count - 1} pessoa(s) confirmaram!`;
-            }
-        }
-
-        if (textMob) textMob.innerText = txt;
-        if (textDesk) textDesk.innerText = txt;
     } catch (e) {
-        console.error("Erro ao ler intenções", e);
-    }
-}
-
-window.registrarIntencao = async function() {
-    if (!window.proximaDataGO) return;
-
-    const btnMob = document.getElementById('mobile-btn-euvou');
-    const btnDesk = document.getElementById('desktop-btn-euvou');
-    
-    if (btnMob) btnMob.disabled = true;
-    if (btnDesk) btnDesk.disabled = true;
-
-    try {
-        if (window.userJaConfirmouIntencao) {
-            // Cancelar
-            const { error } = await supabaseClient
-                .from('intencoes_presenca')
-                .delete()
-                .eq('membro_id', window.meuMembroId)
-                .eq('data_reuniao', window.proximaDataGO);
-            if (error) throw error;
-        } else {
-            // Confirmar
-            const { error } = await supabaseClient
-                .from('intencoes_presenca')
-                .insert([{
-                    membro_id: window.meuMembroId,
-                    grupo_id: window.meuGrupoId,
-                    data_reuniao: window.proximaDataGO
-                }]);
-            if (error && error.code !== '23505') throw error;
-        }
-        
-        carregarIntencoesPresenca(window.proximaDataGO);
-
-    } catch (e) {
-        console.error("Erro ao alternar intenção", e);
-        alert("Erro ao processar sua confirmação.");
-        btnMob.disabled = false;
-        btnDesk.disabled = false;
+        console.error("Erro ao carregar perfil:", e);
     }
 }
 
 async function carregarDashboard() {
-    if (!window.meuGrupoId) return;
+    console.log("Iniciando carga do Dashboard...");
+    
+    if (!window.meuGrupoId) {
+        console.warn("Grupo ID não encontrado. Carga abortada.");
+        return;
+    }
 
     try {
-        // 1. Pegar informações do Grupo
-        const { data: grupo } = await supabaseClient.from('grupos').select('*').eq('id', window.meuGrupoId).maybeSingle();
-        
+        // 1. Informações do Grupo
+        const { data: grupo } = await supabaseClient
+            .from('grupos')
+            .select('*')
+            .eq('id', window.meuGrupoId)
+            .maybeSingle();
+
         if (grupo) {
-            window.infoGO = grupo; // Armazena para o convite
+            window.infoGO = grupo;
             
-            // 2. Contagem Regressiva Inteligente do GO
-            let dataGO = null;
-            let h = 19, m = 30;
-
-            // --- PRIORIDADE: DATA EXCEPCIONAL ---
-            let dataEx = grupo.data_excepcional;
-            let horaEx = grupo.hora_excepcional;
+            // Lógica de Próxima Data
+            let dataGO = new Date();
+            const dias = { 'Domingo':0,'Segunda-feira':1,'Terça-feira':2,'Quarta-feira':3,'Quinta-feira':4,'Sexta-feira':5,'Sábado':6 };
+            const diaDesejado = dias[grupo.dia_reuniao_oracao] || 1;
             
-            if (grupo.local_link_maps && grupo.local_link_maps.startsWith('{')) {
-                try {
-                    const meta = JSON.parse(grupo.local_link_maps);
-                    dataEx = meta.data_ex || dataEx;
-                    horaEx = meta.hora_ex || horaEx;
-                } catch(e){}
-            }
-
-            if (dataEx) {
-                const dataExObj = new Date(`${dataEx}T${horaEx || '19:30'}:00`);
-                const agora = new Date();
-                if (dataExObj > agora) {
-                    dataGO = dataExObj;
+            const diff = (diaDesejado + 7 - dataGO.getDay()) % 7;
+            dataGO.setDate(dataGO.getDate() + diff);
+            
+            // Se tiver data excepcional
+            if (grupo.data_excepcional) {
+                const exc = new Date(grupo.data_excepcional + 'T00:00:00');
+                if (exc >= new Date().setHours(0,0,0,0)) {
+                    dataGO = exc;
                 }
             }
 
-            // --- SEGUNDA OPÇÃO: LÓGICA SEMANAL HABITUAL ---
-            if (!dataGO) {
-                const diasSemana = {"Domingo":0, "Segunda-feira":1, "Terça-feira":2, "Quarta-feira":3, "Quinta-feira":4, "Sexta-feira":5, "Sábado":6};
-                const targetDay = diasSemana[grupo.dia_reuniao_oracao] !== undefined ? diasSemana[grupo.dia_reuniao_oracao] : 0;
-                
-                if (grupo.hora_reuniao_oracao && grupo.hora_reuniao_oracao.includes(':')) {
-                    [h, m] = grupo.hora_reuniao_oracao.split(':').map(Number);
-                }
+            const h = parseInt((grupo.hora_reuniao_oracao || "19:30").split(':')[0]);
+            const m = parseInt((grupo.hora_reuniao_oracao || "19:30").split(':')[1]);
+            dataGO.setHours(h, m, 0, 0);
+            
+            window.proximaDataGO = dataGO.toISOString().split('T')[0];
+            const strDataGO = window.proximaDataGO;
 
-                let now = new Date();
-                let currentDay = now.getDay();
-                let currentH = now.getHours();
-                let currentM = now.getMinutes();
-
-                let diffDays = targetDay - currentDay;
-                
-                if (diffDays === 0) {
-                    if (currentH > h || (currentH === h && currentM > m)) {
-                        diffDays = 7;
-                    }
-                } else if (diffDays < 0) {
-                    diffDays += 7;
-                }
-                
-                dataGO = new Date(now);
-                dataGO.setDate(now.getDate() + diffDays);
-                dataGO.setHours(h, m, 0, 0);
-            }
-
-            const now = new Date();
-            const diffMs = dataGO - now;
-            const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-            const diffHoras = Math.floor(diffMs / (1000 * 60 * 60));
-            const strDataGO = dataGO.toISOString().split('T')[0];
-            window.proximaDataGO = strDataGO;
-
+            // Countdown Visual
+            const diffMs = dataGO - new Date();
+            const diffHoras = diffMs / (1000 * 60 * 60);
+            
             let textoFaltam = "";
             let color = "var(--primary-blue)";
-            if (diffHoras <= 0 && diffMs > -3600000) { // Menos de 1 hora de atraso ainda conta como "É HOJE"
-                textoFaltam = "É HOJE!";
+
+            if (diffMs < 0 && diffMs > -7200000) { // Até 2h depois de começar
+                textoFaltam = "É AGORA!";
                 color = "#dc2626"; // Vermelho vibrante
-                const horasRestantes = diffHoras > 0 ? `Faltam ${diffHoras}h` : 'Começando!';
                 const subEl = document.getElementById('desktop-home-countdown-sub');
                 if (subEl) subEl.innerHTML = `<strong style="color:#dc2626;">${horasRestantes}</strong> para iniciarmos!`;
             } else if (diffHoras > 0 && diffHoras <= 24) {
@@ -449,157 +309,126 @@ async function carregarDashboard() {
             } else {
                 if (btnP) { 
                     btnP.innerText = "Não estive!"; 
-                    btnP.style.setProperty('background-color', 'var(--primary-blue)', 'important');
                 }
             }
-
-            // Busca total de presenças para o contador circular (Desktop)
-            const { count: totalPresencas } = await supabaseClient
-                .from('presencas')
-                .select('*', { count: 'exact', head: true })
-                .eq('reuniao_id', resumo.id);
-            
-            const elTotal = document.getElementById('desktop-presenca-total');
-            if (elTotal) elTotal.innerText = totalPresencas || 0;
-
-        } else {
-            const resTextoEl = document.getElementById('desktop-resumo-texto');
-            if (resTextoEl) resTextoEl.innerText = "Nenhum resumo publicado ainda.";
         }
 
-        // 4. Carregar Mural Aconteceu
+        // 4. Outros Módulos
         carregarAconteceu();
-
-        // 5. Configurar Área de Pedidos na Home
-        const areaPedidoParticipante = document.getElementById('participante-area-pedido');
-        const listaPedidosDesk = document.getElementById('desktop-lista-pedidos');
-        
-        if (areaPedidoParticipante) areaPedidoParticipante.style.display = 'block';
-        if (listaPedidosDesk) listaPedidosDesk.style.display = 'none';
-
-        // 6. Carregar Próximos Eventos do Mês
+        carregarNotificacoes();
+        carregarPedidosDashboard();
         carregarEventosHome();
+        carregarCoordenadorInfo();
+        verificarAlertasNucleo();
 
-        // 7. Verificar Pautas Pendentes
-        await window.verificarPautasHome();
-
-        // 8. Verificar Minhas Assinaturas Fraternais (Novo)
-        await window.verificarMinhasAssinaturasHome();
-
-        // 9. Verificar Minha Escala no Próximo GO (Novo)
-        if (typeof window.verificarMinhaEscalaHome === 'function') {
-            await window.verificarMinhaEscalaHome();
-        }
-
-        // 10. Carregar Notificações do Sininho (Novo)
-        if (typeof window.carregarNotificacoes === 'function') {
-            await window.carregarNotificacoes();
-        }
-
-    } catch (err) {
-        console.error("Erro ao carregar dashboard:", err);
+    } catch (e) {
+        console.error("Erro ao carregar Dashboard:", e);
     }
 }
 
-window.verificarPautasHome = async function() {
-    const alertaBox = document.getElementById('home-alerta-pauta');
-    const resumoText = document.getElementById('home-pauta-resumo');
-    // DEBUG: Log para diagnóstico
-    console.log("DEBUG: Iniciando verificação de pautas para home...");
-    console.log("DEBUG: Grupo ID:", window.meuGrupoId);
-    console.log("DEBUG: Cargo:", window.meuCargo);
-
+async function verificarAlertasNucleo() {
+    // 1. Próxima Reunião de Núcleo (Pauta)
     try {
-        console.log("Verificando pautas para home na tabela reunioes...");
-        const { data: reunioes } = await supabaseClient
+        const { data: pauta } = await supabaseClient
             .from('reunioes')
             .select('*')
             .eq('grupo_id', window.meuGrupoId)
             .eq('tipo', 'Núcleo')
-            .order('data_reuniao', { ascending: false });
-
-        let pauta = (reunioes || []).find(reu => {
-            try { 
-                const d = JSON.parse(reu.resumo_pregacao);
-                return d.status === 'pauta'; 
-            } catch(e) { return false; }
-        });
-
+            .order('data_reuniao', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+            
         if (pauta) {
-            console.log("DEBUG: Pauta encontrada para Home!", pauta);
-            const dados = JSON.parse(pauta.resumo_pregacao);
-            
-            // Formatação Anti-Fuso (Texto Puro)
-            const pura = pauta.data_reuniao.substring(0, 10);
-            const [ano, mes, dia] = pura.split('-');
-            
-            // Backup: Se o banco zerar a hora, tentamos pegar do JSON
-            let dataReferencia = String(dados.data_hora_planejada || pauta.data_reuniao || "");
-            let hora = "00:00";
-            if (dataReferencia) {
-                const matchHora = dataReferencia.match(/(\d{2}:\d{2})/);
-                if (matchHora) hora = matchHora[1];
+            let meta = {}; try { meta = JSON.parse(pauta.avisos_finais || '{}'); } catch(e){}
+            if (meta.status === 'pauta') {
+                const el = document.getElementById('home-alerta-pauta');
+                const txt = document.getElementById('home-pauta-resumo');
+                if (el && txt) {
+                    el.style.display = 'block';
+                    txt.innerText = `Agendada para ${pauta.data_reuniao.split('-').reverse().join('/')}`;
+                }
             }
-            
-            const dataAt = `${dia}/${mes} às ${hora}`;
-            
-            const topico = (dados.pautas || "Assuntos gerais").split('\n')[0];
-            resumoText.innerText = `Próxima Reunião: ${dataAt} • Tópico: ${topico}...`;
-            alertaBox.style.display = 'block';
-        } else {
-            console.log("DEBUG: Nenhuma pauta (status: pauta) encontrada no banco.");
-            alertaBox.style.display = 'none';
         }
-    } catch(e) { 
-        console.error("Erro ao verificar pauta home:", e); 
-        alertaBox.style.display = 'none';
-    }
+    } catch(e){}
+
+    // 2. Alertas de Escala (Urgente)
+    if (typeof carregarAlertasEscala === 'function') carregarAlertasEscala();
 }
 
-window.verificarMinhasAssinaturasHome = async function() {
-    const alertaBox = document.getElementById('home-alerta-assinatura-individual');
-    const msgText = document.getElementById('home-mensagem-assinatura');
-    if (!alertaBox || !window.meuMembroId) return;
+// --- AUXILIARES ---
 
+async function carregarIntencoesPresenca(dataStr) {
     try {
-        const { data: atas } = await supabaseClient
-            .from('reunioes')
-            .select('*')
+        const { data: intencoes } = await supabaseClient
+            .from('presencas_intencao')
+            .select('membro_id, membros(nome)')
             .eq('grupo_id', window.meuGrupoId)
-            .eq('tipo', 'Núcleo')
-            .order('data_reuniao', { ascending: false });
+            .eq('data_reuniao', dataStr);
 
-        let pendente = (atas || []).find(ata => {
-            try { 
-                const d = JSON.parse(ata.resumo_pregacao);
-                return d.status === 'finalizada' && d.presentes.includes(window.meuMembroId) && !d.assinaturas[window.meuMembroId];
-            } catch(e) { return false; }
-        });
+        const btn = document.getElementById('desktop-btn-euvou');
+        const countEl = document.getElementById('desktop-intencoes-count');
+        
+        const jaVou = intencoes ? intencoes.some(i => i.membro_id === window.meuMembroId) : false;
+        
+        if (btn) {
+            btn.innerText = jaVou ? "Confirmado ✓" : "✋ Eu vou!";
+            btn.style.backgroundColor = jaVou ? "#16a34a" : "var(--primary-red)";
+        }
 
-        if (pendente) {
-            const dataAt = new Date(pendente.data_reuniao).toLocaleDateString('pt-BR');
-            msgText.innerHTML = `Olá, <b>${window.meuNome.split(' ')[0]}</b>! Que alegria partilharmos da nossa última reunião de núcleo no dia ${dataAt}. <br><br>
-            Para que nossos passos continuem em plena unidade, o registro da ata aguarda sua leitura e assinatura fraternal.<br><br>
-            Lembramos com carinho que, após 3 dias, o sistema realizará a confirmação automática para mantermos o fluxo de nossa missão. 
-            Após esse prazo, sua ciência será registrada e a ata não poderá mais ser editada.`;
-            alertaBox.style.display = 'block';
-        } else {
-            alertaBox.style.display = 'none';
+        if (countEl) {
+            if (!intencoes || intencoes.length === 0) {
+                countEl.innerText = "Seja o primeiro a confirmar!";
+            } else {
+                const outros = intencoes.length - 1;
+                if (jaVou) {
+                    countEl.innerText = outros > 0 ? `Você e mais ${outros} pessoas confirmaram` : "Só você confirmou por enquanto";
+                } else {
+                    countEl.innerText = `${intencoes.length} pessoas já confirmaram presença`;
+                }
+            }
         }
     } catch(e) { console.error(e); }
 }
 
-// --- CONTROLE DE MENU MOBILE ---
+window.registrarIntencao = async function() {
+    if (!window.proximaDataGO) return;
+    const btn = document.getElementById('desktop-btn-euvou');
+    if (btn) btn.disabled = true;
+
+    try {
+        const dataStr = window.proximaDataGO;
+        const { data: jaExiste } = await supabaseClient
+            .from('presencas_intencao')
+            .select('id')
+            .eq('membro_id', window.meuMembroId)
+            .eq('data_reuniao', dataStr)
+            .maybeSingle();
+
+        if (jaExiste) {
+            await supabaseClient.from('presencas_intencao').delete().eq('id', jaExiste.id);
+        } else {
+            await supabaseClient.from('presencas_intencao').insert([{
+                grupo_id: window.meuGrupoId,
+                membro_id: window.meuMembroId,
+                data_reuniao: dataStr
+            }]);
+        }
+        carregarIntencoesPresenca(dataStr);
+    } catch(e) { console.error(e); }
+    finally { if (btn) btn.disabled = false; }
+};
+
 window.toggleMenuMobile = function() {
-    const overlay = document.getElementById('mobile-menu-overlay');
-    if (!overlay) return;
-    
-    if (overlay.style.display === 'none') {
-        overlay.style.display = 'block';
-        document.body.style.overflow = 'hidden'; // Trava scroll do fundo
-    } else {
+    const menu = document.getElementById('menu-mobile-overlay');
+    const overlay = document.getElementById('app-overlay');
+    if (menu.style.display === 'flex') {
+        menu.style.display = 'none';
         overlay.style.display = 'none';
         document.body.style.overflow = 'auto';
+    } else {
+        menu.style.display = 'flex';
+        overlay.style.display = 'block';
+        document.body.style.overflow = 'hidden';
     }
 };
 
@@ -609,7 +438,7 @@ window.clickMenuMobile = function(viewId) {
 };
 
 // ==========================================
-// FIM DO ARQUIVO
+// MÓDULO: NOTÍCIAS (MURAL)
 // ==========================================
 async function carregarAconteceu() {
     try {
@@ -676,7 +505,6 @@ async function carregarAconteceu() {
                 if (listaDesk) listaDesk.innerHTML += itemHtml;
             });
         }
-
     } catch (e) {
         console.error("Erro ao carregar aconteceu", e);
     }
@@ -690,30 +518,9 @@ window.fecharModalAconteceu = function() {
     document.getElementById('modal-aconteceu').style.display = 'none';
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const formAconteceu = document.getElementById('form-aconteceu');
-    if (formAconteceu) {
-        formAconteceu.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const txt = document.getElementById('aconteceu-texto').value;
-            try {
-                const { error } = await supabaseClient.from('aconteceu_go').insert([{
-                    grupo_id: window.meuGrupoId,
-                    membro_id: window.meuMembroId,
-                    texto: txt
-                }]);
-                if (error) throw error;
-                
-                fecharModalAconteceu();
-                document.getElementById('form-aconteceu').reset();
-                carregarAconteceu();
-            } catch (err) {
-                console.error("Erro ao postar notícia", err);
-                alert("Erro ao postar notícia.");
-            }
-        });
-    }
-});
+// ==========================================
+// OUTROS MÓDULOS (DASHBOARD)
+// ==========================================
 
 async function carregarPedidosDashboard() {
     // Apenas quem tem permissão de ver pedidos (RBAC)
@@ -835,7 +642,7 @@ window.alternarView = function(viewId) {
 
     const targetView = document.getElementById(viewId);
     if (targetView) {
-        targetView.style.display = 'block'; // Ou grid, mas os cards resolvem
+        targetView.style.display = 'block';
         
         if (viewId === 'view-pedidos' && typeof carregarPedidos === 'function') carregarPedidos();
         if (viewId === 'view-meus-pedidos') carregarMeusPedidos();
@@ -913,7 +720,6 @@ window.registrarPresencaUltimoGO = async function() {
             
             if (error) throw error;
             
-            // Estado Visual: Não Confirmado
             window.userJaConfirmouPresenca = false;
             if (btn) {
                 btn.innerText = "Não estive!";
@@ -921,7 +727,7 @@ window.registrarPresencaUltimoGO = async function() {
             }
             if (feed) {
                 feed.innerText = "Que pena! Estamos te esperando no próximo.";
-                feed.style.color = "#dc2626"; // Vermelho
+                feed.style.color = "#dc2626";
             }
         } else {
             // --- MARCAR ---
@@ -933,7 +739,6 @@ window.registrarPresencaUltimoGO = async function() {
             
             if (error) throw error;
             
-            // Estado Visual: Confirmado
             window.userJaConfirmouPresenca = true;
             if (btn) {
                 btn.innerText = "Você estava lá ✓";
@@ -941,11 +746,10 @@ window.registrarPresencaUltimoGO = async function() {
             }
             if (feed) {
                 feed.innerText = "Obrigado! Que bom que esteve lá!";
-                feed.style.color = "#16a34a"; // Verde
+                feed.style.color = "#16a34a";
             }
         }
         
-        // Atualizar contador de presenças sem recarregar tudo
         const { count } = await supabaseClient
             .from('presencas')
             .select('*', { count: 'exact', head: true })
@@ -956,7 +760,7 @@ window.registrarPresencaUltimoGO = async function() {
 
     } catch(e) {
         console.error("Erro ao alternar presença:", e);
-        alert("Erro ao processar sua presença. Tente novamente.");
+        alert("Erro ao processar sua presença.");
     } finally {
         if (btn) btn.disabled = false;
     }
@@ -972,12 +776,8 @@ async function carregarCoordenadorInfo() {
             .maybeSingle();
 
         if (coord) {
-            const elInfo = document.getElementById('sidebar-coord-info');
             const elNome = document.getElementById('sidebar-coord-nome');
-            if (elInfo && elNome) {
-                elInfo.style.display = 'block';
-                elNome.innerText = coord.nome;
-            }
+            if (elNome) elNome.innerText = coord.nome;
         }
     } catch (e) {
         console.error("Erro ao carregar coord info:", e);
@@ -998,11 +798,7 @@ async function carregarMeusPedidos() {
         container.innerHTML = '';
 
         if (!pedidos || pedidos.length === 0) {
-            container.innerHTML = `
-                <div class="card text-center">
-                    <p style="color: var(--text-muted);">Você ainda não enviou nenhum pedido de oração.</p>
-                </div>
-            `;
+            container.innerHTML = `<div class="card text-center"><p style="color: var(--text-muted);">Você ainda não enviou nenhum pedido.</p></div>`;
             return;
         }
 
@@ -1016,96 +812,16 @@ async function carregarMeusPedidos() {
                 <div class="flex justify-between items-start" style="margin-bottom: 10px;">
                     <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${data}</span>
                     <div class="flex gap-2">
-                        <button onclick="editarPedido('${p.id}', '${p.texto.replace(/'/g, "\\'")}')" style="background:none; border:none; color:var(--primary-blue); font-size:0.75rem; cursor:pointer;">✏️ Editar</button>
-                        <button onclick="excluirPedido('${p.id}')" style="background:none; border:none; color:var(--primary-red); font-size:0.75rem; cursor:pointer;">🗑️ Excluir</button>
+                        <button onclick="editarPedido('${p.id}', '${p.texto.replace(/'/g, "\\'")}')" style="background:none; border:none; color:var(--primary-blue); font-size:0.75rem; cursor:pointer;">✏️</button>
+                        <button onclick="excluirPedido('${p.id}')" style="background:none; border:none; color:var(--primary-red); font-size:0.75rem; cursor:pointer;">🗑️</button>
                     </div>
                 </div>
-                <p style="font-size: 0.95rem; color: var(--text-main); line-height: 1.5; margin-bottom: 10px;">${p.texto}</p>
-
-                ${p.resposta ? `
-                    <div style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px; border-radius: 8px; margin-top: 10px; position: relative;">
-                        <div style="font-size: 0.65rem; color: var(--primary-blue); font-weight: 800; text-transform: uppercase; margin-bottom: 5px;">Resposta Recebida:</div>
-                        <p style="font-size: 0.9rem; color: #334155; margin: 0; line-height: 1.4; font-style: italic;">"${p.resposta}"</p>
-                    </div>
-                    
-                    <div id="reacao-area-${p.id}" style="margin-top: 8px; padding-left: 5px;">
-                        ${p.reacao ? `
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                <span style="font-size: 0.7rem; color: #64748b;">✓ Você marcou como lido</span>
-                                <span style="font-size: 1.1rem;">${p.reacao}</span>
-                            </div>
-                        ` : `
-                            <button onclick="reagirPedido('${p.id}', '👍')" style="background: white; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05);" onmouseover="this.style.border='1px solid var(--primary-blue)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.border='1px solid #e2e8f0'; this.style.transform='translateY(0)'">
-                                <span>Marcar como lido</span> 👍
-                            </button>
-                        `}
-                    </div>
-                ` : ''}
+                <p style="font-size: 0.95rem;">${p.texto}</p>
+                ${p.resposta ? `<div style="background: #f8fafc; padding: 10px; border-radius: 8px; margin-top: 10px; font-style: italic;">"${p.resposta}"</div>` : ''}
             `;
             container.appendChild(div);
         });
-    } catch (e) {
-        console.error("Erro ao carregar meus pedidos:", e);
-    }
-}
-
-window.reagirPedido = async function(id, emoji) {
-    try {
-        const { error } = await supabaseClient
-            .from('pedidos_oracao')
-            .update({ reacao: emoji })
-            .eq('id', id);
-
-        if (error) throw error;
-        
-        // Feedback visual imediato
-        const area = document.getElementById(`reacao-area-${id}`);
-        if (area) area.innerHTML = `<span style="font-size: 1.2rem;">${emoji}</span>`;
-        
-    } catch (err) {
-        console.error("Erro ao reagir ao pedido:", err);
-    }
-}
-
-async function carregarCoordenadorInfo() {
-    try {
-        const { data: coord } = await supabaseClient
-            .from('membros')
-            .select('nome')
-            .eq('grupo_id', window.meuGrupoId)
-            .eq('cargo', 'Coordenador')
-            .maybeSingle();
-            
-        if (coord) {
-            const el = document.getElementById('sidebar-coord-nome');
-            if (el) el.innerText = coord.nome;
-        }
-    } catch(e) { console.error(e); }
-}
-
-window.excluirPedido = async function(id) {
-    if (confirm("Deseja realmente excluir este pedido?")) {
-        try {
-            const { error } = await supabaseClient.from('pedidos_oracao').delete().eq('id', id);
-            if (error) throw error;
-            carregarMeusPedidos();
-        } catch (e) {
-            alert("Erro ao excluir pedido.");
-        }
-    }
-}
-
-window.editarPedido = async function(id, textoAntigo) {
-    const novoTexto = prompt("Edite seu pedido de oração:", textoAntigo);
-    if (novoTexto && novoTexto !== textoAntigo) {
-        try {
-            const { error } = await supabaseClient.from('pedidos_oracao').update({ texto: novoTexto }).eq('id', id);
-            if (error) throw error;
-            carregarMeusPedidos();
-        } catch (e) {
-            alert("Erro ao editar pedido.");
-        }
-    }
+    } catch (e) { console.error(e); }
 }
 
 async function carregarEventosHome() {
@@ -1125,75 +841,37 @@ async function carregarEventosHome() {
             .lte('data', ultimoDiaMes)
             .order('data', { ascending: true });
 
-        // Se for participante, vê apenas públicos
-        if (window.meuCargo === 'Participante') {
-            query = query.eq('visibilidade', 'Público');
-        }
+        if (window.meuCargo === 'Participante') query = query.eq('visibilidade', 'Público');
 
         const { data: eventos } = await query;
         container.innerHTML = '';
 
         if (!eventos || eventos.length === 0) {
-            container.innerHTML = '<p style="font-size:0.75rem; color:var(--text-muted); text-align:center;">Nenhum evento para este mês.</p>';
+            container.innerHTML = '<p style="font-size:0.75rem; color:var(--text-muted); text-align:center;">Nenhum evento este mês.</p>';
             return;
         }
 
         eventos.forEach(ev => {
             const data = new Date(ev.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
             container.innerHTML += `
-                <div style="padding: 8px; background: #f8fafc; border-radius: 6px; border-left: 3px solid var(--primary-red);">
-                    <div style="font-size: 0.8rem; font-weight: 600; color: var(--primary-blue);">${ev.titulo}</div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted);">📅 ${data} • ${ev.local || 'Local não definido'}</div>
+                <div style="padding: 8px; background: #f8fafc; border-radius: 6px; border-left: 3px solid var(--primary-red); margin-bottom:5px;">
+                    <div style="font-size: 0.8rem; font-weight: 600;">${ev.titulo}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">📅 ${data}</div>
                 </div>
             `;
         });
-    } catch (e) {
-        console.error("Erro ao carregar eventos home:", e);
-    }
+    } catch (e) { console.error(e); }
 }
 
 window.compartilharConvite = async function() {
-    if (!window.infoGO || !window.proximaDataGO) {
-        alert("Informações do GO ainda não carregadas.");
-        return;
-    }
-
+    if (!window.infoGO || !window.proximaDataGO) return;
     const g = window.infoGO;
     const dataFormatada = new Date(window.proximaDataGO + 'T12:00:00').toLocaleDateString('pt-BR');
-    const horario = g.hora_reuniao_oracao || "19:30";
+    const mensagem = `Ei! Convite para o GO *${g.nome}*\n📅 ${dataFormatada}\n⏰ ${g.hora_reuniao_oracao || "19:30"}`;
     
-    let localLink = g.local_link_maps || "Local habitual";
-    if (localLink && localLink.startsWith('http')) {
-        // Já é um link
-    } else if (localLink !== "Local habitual") {
-        localLink = 'https://' + localLink;
-    }
-
-    const mensagem = `Ei! Quero te fazer um convite especial
-
-Vai acontecer o nosso Grupo de Oração *${g.nome}*, e eu gostaria muito que você fosse.
-📅 *Data:* ${dataFormatada}
-⏰ *Horário:* ${horario}
-📍 *Local:* ${localLink}
-
-Vai ser uma alegria ter você lá 🙏
-Tenho certeza que vai gostar.
-
-Com carinho,
-*${window.meuNome || 'Seu amigo(a)'}*`;
-
-    if (navigator.share) {
-        try {
-            await navigator.share({
-                title: `Convite para o GO ${g.nome}`,
-                text: mensagem
-            });
-        } catch (err) { console.error(err); }
-    } else {
-        try {
-            await navigator.clipboard.writeText(mensagem);
-            alert("Convite copiado! Cole no WhatsApp para convidar seus amigos.");
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`, '_blank');
-        } catch (err) { alert("Erro ao copiar convite."); }
+    if (navigator.share) await navigator.share({ text: mensagem });
+    else {
+        await navigator.clipboard.writeText(mensagem);
+        alert("Copiado!");
     }
 };

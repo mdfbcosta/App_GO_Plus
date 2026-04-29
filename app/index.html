@@ -272,7 +272,7 @@
                     <div class="card">
                         <div class="flex justify-between items-center" style="margin-bottom: 15px;">
                             <h3 style="color: var(--primary-blue); font-size: 1rem;">Últimas notícias do GO</h3>
-                            <button id="desktop-btn-add-aconteceu" class="btn btn-outline" style="padding: 4px 10px; font-size:0.75rem; display:none;" onclick="abrirModalAconteceu()">+ Postar</button>
+                            <button id="desktop-btn-add-aconteceu" class="btn btn-outline" style="padding: 4px 10px; font-size:0.75rem; display:none;" onclick="alternarView('view-gerenciar-noticias')">+ Postar</button>
                         </div>
                         <div id="desktop-lista-aconteceu" style="display:flex; flex-direction:column; gap:10px;">
                             <p style="font-size:0.8rem; color:var(--text-muted); text-align:center;">Carregando...</p>
@@ -1367,7 +1367,7 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../auth.js?v=2.1"></script>
-    <script src="app.js?v=2.1"></script>
+    <script src="app.js?v=2.3"></script>
     <script src="eventos.js?v=2.1"></script>
     <script src="ata.js?v=2.1"></script>
     <script src="escala.js?v=2.1"></script>
@@ -1379,7 +1379,7 @@
     <script src="pedidos.js?v=2.1"></script>
     <script src="perfil.js?v=2.1"></script>
     <script src="relatorios.js?v=2.1"></script>
-    <script src="noticias.js?v=2.2"></script>
+    <script src="noticias.js?v=2.5"></script>
     <script src="configuracoes.js?v=2.1"></script>
         <!-- Modal: Editar Escala (Urgente) -->
         <div id="modal-editar-escala" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2300; justify-content:center; align-items:center;">
