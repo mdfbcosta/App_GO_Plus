@@ -84,13 +84,7 @@ async function carregarListaNoticiasHub() {
                 </div>
             `;
             
-            // Event Listeners Diretos (Reforço)
-            const bEdit = item.querySelector('.btn-edit-noticia');
-            const bDel = item.querySelector('.btn-delete-noticia');
-            
-            if (bEdit) bEdit.onclick = (e) => { e.preventDefault(); window.prepararEdicaoNoticia(n.id); };
-            if (bDel) bDel.onclick = (e) => { e.preventDefault(); window.excluirNoticia(n.id); };
-
+            // Delegação via app.js
             container.appendChild(item);
         });
 

@@ -471,15 +471,28 @@ window.compartilharNoticia = function(id) {
     }
 };
 
-// Delegated Listener Global para Excluir Notícia
+// Delegated Listener Global para Notícias
 document.addEventListener('click', (e) => {
+    // Excluir
     const btnDel = e.target.closest('.btn-delete-noticia');
     if (btnDel) {
+        e.preventDefault();
         const id = btnDel.getAttribute('data-id');
         if (typeof window.excluirNoticia === 'function') {
-            e.preventDefault();
             window.excluirNoticia(id);
         }
+        return;
+    }
+
+    // Editar
+    const btnEdit = e.target.closest('.btn-edit-noticia');
+    if (btnEdit) {
+        e.preventDefault();
+        const id = btnEdit.getAttribute('data-id');
+        if (typeof window.prepararEdicaoNoticia === 'function') {
+            window.prepararEdicaoNoticia(id);
+        }
+        return;
     }
 });
 
@@ -529,7 +542,7 @@ window.carregarAconteceu = async function() {
             const userJaCurtiu = reacoes.some(r => r.membro_id === window.meuMembroId);
             
             html += `
-            <div class="insta-post" style="scroll-snap-align: start; flex: 0 0 520px; height: 520px; display: flex; flex-direction: column; background: #fff; border-bottom: 1px solid #eee;">
+            <div class="insta-post" style="display: flex; flex-direction: column; background: #fff; border: 1px solid #eee; border-radius: 12px; margin-bottom: 15px; overflow: hidden; box-shadow: var(--shadow-sm);">
                 <!-- Header -->
                 <div class="flex items-center gap-3" style="padding: 12px; flex-shrink: 0;">
                     <img src="${fotoMembro}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border: 1px solid #dbdbdb;">
@@ -571,7 +584,7 @@ window.carregarAconteceu = async function() {
                 </div>
 
                 <!-- Actions & Caption -->
-                <div style="padding: 10px 12px; background: white; flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="padding: 10px 12px; background: white; flex: 1; display: flex; flex-direction: column;">
                     <div class="flex items-center gap-3" style="margin-bottom: 6px; flex-shrink: 0;">
                         <button onclick="window.reagirNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; gap:5px;">
                             <span id="noticia-like-icon-${n.id}" style="font-size: 1.3rem; color: ${userJaCurtiu ? '#ed4956' : '#262626'}">${userJaCurtiu ? '❤️' : '🤍'}</span>
@@ -582,7 +595,7 @@ window.carregarAconteceu = async function() {
                         </button>
                     </div>
 
-                    <div style="font-size: 0.85rem; line-height: 1.4; color: #262626; overflow: hidden;">
+                    <div style="font-size: 0.85rem; line-height: 1.4; color: #262626;">
                         <div id="noticia-texto-${n.id}" style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;">
                             ${n.titulo ? `<strong style="display:block; margin-bottom:2px; font-size: 0.95rem; color: #1e293b;">${n.titulo}</strong>` : ''}${n.texto}
                         </div>
