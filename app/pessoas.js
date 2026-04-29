@@ -64,6 +64,12 @@ async function carregarPessoas() {
                 card.style.borderLeft = '4px solid #facc15'; // Borda amarela/ouro
             }
 
+            // Formatação do Telefone e Links de Contato
+            const telBruto = m.telefone ? m.telefone.replace(/\D/g, '') : '';
+            const linkZap = telBruto ? `https://api.whatsapp.com/send?phone=55${telBruto}` : '#';
+            const linkTel = telBruto ? `tel:+55${telBruto}` : '#';
+            const telExibicao = m.telefone || 'Sem número';
+
             const ehServo = m.cargo && m.cargo !== 'Participante';
 
             card.innerHTML = `
@@ -74,11 +80,17 @@ async function carregarPessoas() {
                         <div style="font-size: 0.75rem; color: var(--text-muted);">${cargoExibicao}</div>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span style="background: ${m.status === 'Ativo' ? '#dcfce7' : '#fee2e2'}; color: ${m.status === 'Ativo' ? '#166534' : '#991b1b'}; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">
-                        ${m.status}
-                    </span>
-                    <button onclick="removerMembro('${m.id}', '${m.nome}')" style="background:none; border:none; color:var(--primary-red); cursor:pointer; font-size:1.1rem; padding: 5px;" title="Remover">🗑️</button>
+                <div class="flex items-center gap-3">
+                    <div class="flex-col items-end">
+                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600; margin-bottom: 2px;">${telExibicao}</div>
+                        <div class="flex gap-2">
+                            ${telBruto ? `
+                                <a href="${linkZap}" target="_blank" style="text-decoration:none; font-size: 1.1rem;" title="WhatsApp">🟢</a>
+                                <a href="${linkTel}" style="text-decoration:none; font-size: 1.1rem;" title="Ligar">📞</a>
+                            ` : '<span style="font-size:0.65rem; color:#ccc;">Contato não cadastrado</span>'}
+                        </div>
+                    </div>
+                    <button onclick="removerMembro('${m.id}', '${m.nome}')" style="background:none; border:none; color:var(--primary-red); cursor:pointer; font-size:1.1rem; padding: 5px; margin-left: 5px;" title="Remover">🗑️</button>
                 </div>
             `;
 
