@@ -462,43 +462,53 @@ async function carregarAconteceu() {
                 const dataStr = new Date(n.criado_em).toLocaleDateString('pt-BR');
                 const fotoMembro = n.membros?.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(n.membros?.nome || 'U')}&background=1E3A8A&color=fff`;
                 
-                let fotosHtml = '';
                 let fotosArr = [];
                 try { fotosArr = typeof n.fotos === 'string' ? JSON.parse(n.fotos) : (n.fotos || []); } catch(e){}
                 
-                if (fotosArr.length > 0) {
-                    fotosHtml = `<div class="flex gap-1 overflow-x-auto" style="margin: 8px 0; padding-bottom: 5px;">
-                        ${fotosArr.map(f => `<img src="${f}" style="width:120px; height:80px; object-fit:cover; border-radius:6px; flex-shrink:0;">`).join('')}
-                    </div>`;
-                }
-
                 const reacoes = n.reacoes || [];
                 const userJaCurtiu = reacoes.some(r => r.membro_id === window.meuMembroId);
                 
                 const itemHtml = `
-                    <div class="card-noticia" style="background: #fff; padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9; margin-bottom: 10px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
-                        <div class="flex justify-between items-start">
-                            <div class="flex items-center gap-2">
-                                <img src="${fotoMembro}" style="width:18px; height:18px; border-radius:50%; object-fit:cover;">
-                                <div class="flex flex-col">
-                                    <span style="font-size: 0.65rem; font-weight:700; color:var(--primary-blue);">${n.membros?.nome || 'GO+'}</span>
-                                    <span style="font-size: 0.55rem; color:var(--text-muted);">${dataStr}</span>
-                                </div>
+                    <div class="insta-post" style="background: #fff; border-radius: 12px; border: 1px solid #efefef; overflow: hidden; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <!-- Header -->
+                        <div class="flex items-center gap-3" style="padding: 10px;">
+                            <img src="${fotoMembro}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border: 1px solid #dbdbdb; padding: 1px;">
+                            <div class="flex flex-col">
+                                <span style="font-size: 0.75rem; font-weight:700; color:#262626;">${n.membros?.nome || 'GO+'}</span>
+                                <span style="font-size: 0.6rem; color:#8e8e8e;">${dataStr}</span>
                             </div>
                         </div>
 
-                        <div style="margin-top: 10px;">
-                            ${n.titulo ? `<h4 style="font-size: 0.85rem; font-weight:800; color: #1e293b; margin-bottom: 4px;">${n.titulo}</h4>` : ''}
-                            <p style="font-size: 0.8rem; line-height:1.5; color:#475569;">${n.texto}</p>
-                        </div>
+                        <!-- Media (Carousel/Image) -->
+                        ${fotosArr.length > 0 ? `
+                            <div style="position: relative; width: 100%; aspect-ratio: 1/1; background: #fafafa; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                <div class="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar" style="width: 100%; height: 100%;">
+                                    ${fotosArr.map(f => `<img src="${f}" style="width:100%; height:100%; object-fit:cover; flex-shrink:0; snap-align: start;">`).join('')}
+                                </div>
+                                ${fotosArr.length > 1 ? `
+                                    <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.6rem; padding: 3px 7px; border-radius: 10px; pointer-events: none;">
+                                        1/${fotosArr.length}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : ''}
 
-                        ${fotosHtml}
-
-                        <div class="flex justify-between items-center" style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #f8fafc;">
-                            <button onclick="reagirNoticia('${n.id}')" style="background:none; border:none; display:flex; align-items:center; gap:5px; cursor:pointer; color: ${userJaCurtiu ? '#ef4444' : '#64748b'};">
-                                <span id="noticia-like-icon-${n.id}" style="font-size: 1.1rem;">${userJaCurtiu ? '❤️' : '🤍'}</span>
-                                <span id="noticia-like-count-${n.id}" style="font-size: 0.75rem; font-weight:600;">${reacoes.length}</span>
-                            </button>
+                        <!-- Actions -->
+                        <div style="padding: 10px;">
+                            <div class="flex items-center gap-3" style="margin-bottom: 6px;">
+                                <button onclick="reagirNoticia('${n.id}')" style="background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center;">
+                                    <span id="noticia-like-icon-${n.id}" style="font-size: 1.4rem; color: ${userJaCurtiu ? '#ed4956' : '#262626'};">${userJaCurtiu ? '❤️' : '🤍'}</span>
+                                </button>
+                            </div>
+                            <div style="font-size: 0.8rem; font-weight: 700; color: #262626; margin-bottom: 4px;">
+                                <span id="noticia-like-count-${n.id}">${reacoes.length}</span> curtidas
+                            </div>
+                            
+                            <!-- Caption -->
+                            <div style="font-size: 0.8rem; line-height: 1.4; color: #262626;">
+                                ${n.titulo ? `<div style="font-weight: 700; margin-bottom: 2px;">${n.titulo}</div>` : ''}
+                                <div style="white-space: pre-wrap; color: #4b5563;">${n.texto}</div>
+                            </div>
                         </div>
                     </div>
                 `;
