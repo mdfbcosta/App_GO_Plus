@@ -67,21 +67,38 @@ window.previewArtEvento = async function(event) {
     autoSaveDraftEvento();
 };
 
+// --- RASCUNHOS ---
+
 window.autoSaveDraftEvento = function() {
     if (eventoModo === 'edit') return;
+    const titulo = document.getElementById('evento-titulo').value;
+    const desc = document.getElementById('evento-desc').value;
+    
+    if (titulo.length < 3 && desc.length < 3) return; // Evita salvar rascunhos vazios
+
     const draft = {
-        titulo: document.getElementById('evento-titulo').value,
+        id: eventoIdEmEdicao || 'draft_' + Date.now(),
+        titulo: titulo,
         data_ini: document.getElementById('evento-data').value,
         data_fim: document.getElementById('evento-data-fim').value,
         local: document.getElementById('evento-local').value,
-        desc: document.getElementById('evento-desc').value,
+        desc: desc,
         link: document.getElementById('evento-link').value,
         visib: document.getElementById('evento-visibilidade').value,
-        foto: arteEventoBase64
+        foto: arteEventoBase64,
+        salvo_em: new Date().toISOString()
     };
-    localStorage.setItem('go_plus_evento_draft', JSON.stringify(draft));
+    
+    let drafts = JSON.parse(localStorage.getItem('go_plus_eventos_drafts') || '[]');
+    // Remove versão anterior se existir (mesmo ID ou mesmo título recente)
+    drafts = drafts.filter(d => d.id !== draft.id && d.titulo !== draft.titulo);
+    drafts.unshift(draft);
+    // Limita a 10 rascunhos
+    if (drafts.length > 10) drafts.pop();
+    
+    localStorage.setItem('go_plus_eventos_drafts', JSON.stringify(drafts));
     const st = document.getElementById('evento-draft-status');
-    if (st) st.innerText = `Rascunho salvo`;
+    if (st) st.innerText = `Rascunho salvo às ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
 };
 
 // --- NAVEGAÇÃO ---
@@ -140,9 +157,11 @@ window.carregarEventos = async function(mesIndex) {
             card.className = 'card';
             card.style.cssText = 'margin-bottom: 15px; overflow: hidden; padding: 0;';
             
-            let imgHtml = meta.foto ? `<img src="${meta.foto}" style="width:100%; height:150px; object-fit:cover; border-bottom:1px solid #eee;">` : '';
+            let imgHtml = meta.foto ? `<img src="${meta.foto}" style="width:100%; height:180px; object-fit:cover; border-bottom:1px solid #eee;">` : '';
             let dataStr = dIni.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
             if (dFim) dataStr += ` até ${dFim.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'})}`;
+
+            const textoLimpo = (meta.texto || 'Sem descrição.').replace(/\n/g, '<br>');
 
             card.innerHTML = `
                 ${imgHtml}
@@ -153,7 +172,11 @@ window.carregarEventos = async function(mesIndex) {
                     </div>
                     <p style="font-size:0.75rem; color:var(--text-muted); margin:5px 0;">📅 ${dataStr} • ⏰ ${dIni.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}${dFim ? ' - '+dFim.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</p>
                     <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">📍 ${ev.local_evento || 'Local não definido'}</p>
-                    <p style="font-size:0.8rem; line-height:1.4;">${meta.texto || 'Sem descrição.'}</p>
+                    
+                    <div id="evento-desc-${ev.id}" style="font-size:0.8rem; line-height:1.5; color:#4a5568; max-height: 80px; overflow: hidden; transition: max-height 0.3s ease;">
+                        ${textoLimpo}
+                    </div>
+                    ${textoLimpo.length > 100 ? `<button id="btn-mais-evento-${ev.id}" onclick="expandirEventoDesc('${ev.id}')" style="background:none; border:none; color:var(--primary-blue); font-size:0.75rem; font-weight:700; padding:0; margin-top:5px; cursor:pointer;">... ler mais</button>` : ''}
                     
                     <div class="flex gap-2" style="margin-top:15px;">
                         ${meta.link ? `<a href="${meta.link}" target="_blank" class="btn btn-primary" style="flex:1; font-size:0.7rem; padding:8px;">🔗 Inscrição / Info</a>` : ''}
@@ -169,6 +192,84 @@ window.carregarEventos = async function(mesIndex) {
     } catch (err) { console.error(err); }
 };
 
+window.abrirModalRascunhos = function() {
+    const drafts = JSON.parse(localStorage.getItem('go_plus_eventos_drafts') || '[]');
+    const container = document.getElementById('lista-rascunhos-items');
+    container.innerHTML = '';
+
+    if (drafts.length === 0) {
+        container.innerHTML = '<p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 20px;">Nenhum rascunho salvo.</p>';
+    } else {
+        // Ordena por data (mais recente primeiro)
+        drafts.sort((a,b) => new Date(b.salvo_em) - new Date(a.salvo_em));
+        
+        drafts.forEach(d => {
+            const item = document.createElement('div');
+            item.className = 'card';
+            item.style.padding = '12px';
+            item.style.marginBottom = '5px';
+            item.style.background = '#f8fafc';
+            item.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <div style="flex:1; cursor:pointer;" onclick="restaurarRascunho('${d.id}')">
+                        <div style="font-weight:700; color:var(--primary-blue); font-size:0.85rem;">${d.titulo || '(Sem título)'}</div>
+                        <div style="font-size:0.65rem; color:var(--text-muted);">Salvo em: ${new Date(d.salvo_em).toLocaleString()}</div>
+                    </div>
+                    <button class="btn-close" style="font-size:0.7rem; color:red; background:none; border:none;" onclick="excluirRascunho('${d.id}')">🗑️</button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    }
+    document.getElementById('modal-rascunhos').style.display = 'flex';
+};
+
+window.restaurarRascunho = function(id) {
+    const drafts = JSON.parse(localStorage.getItem('go_plus_eventos_drafts') || '[]');
+    const d = drafts.find(x => x.id === id);
+    if (!d) return;
+
+    eventoModo = 'novo';
+    eventoIdEmEdicao = null; // Reinicia o ID para não sobrescrever um rascunho com o outro ao salvar
+    document.getElementById('evento-titulo').value = d.titulo || '';
+    document.getElementById('evento-data').value = d.data_ini || '';
+    document.getElementById('evento-data-fim').value = d.data_fim || '';
+    document.getElementById('evento-local').value = d.local || '';
+    document.getElementById('evento-desc').value = d.desc || '';
+    document.getElementById('evento-link').value = d.link || '';
+    document.getElementById('evento-visibilidade').value = d.visib || 'Público';
+    
+    if (d.foto) {
+        arteEventoBase64 = d.foto;
+        document.getElementById('evento-art-preview').innerHTML = `<img src="${d.foto}" style="width:100%; height:100%; object-fit:cover;">`;
+    }
+
+    document.getElementById('modal-rascunhos').style.display = 'none';
+    document.getElementById('modal-evento').style.display = 'flex';
+    document.getElementById('modal-evento-titulo').innerText = "Restaurar Rascunho";
+};
+
+window.excluirRascunho = function(id) {
+    let drafts = JSON.parse(localStorage.getItem('go_plus_eventos_drafts') || '[]');
+    drafts = drafts.filter(d => d.id !== id);
+    localStorage.setItem('go_plus_eventos_drafts', JSON.stringify(drafts));
+    abrirModalRascunhos();
+};
+
+window.expandirEventoDesc = function(id) {
+    const el = document.getElementById(`evento-desc-${id}`);
+    const btn = document.getElementById(`btn-mais-evento-${id}`);
+    if (el) {
+        if (el.style.maxHeight === 'none') {
+            el.style.maxHeight = '80px';
+            btn.innerText = "... ler mais";
+        } else {
+            el.style.maxHeight = 'none';
+            btn.innerText = "recolher";
+        }
+    }
+};
+
 // --- AÇÕES ---
 
 window.abrirModalEvento = function() {
@@ -177,24 +278,7 @@ window.abrirModalEvento = function() {
     document.getElementById('btn-salvar-evento').innerText = "Criar Evento";
     document.getElementById('form-evento').reset();
     document.getElementById('evento-art-preview').innerHTML = '<span style="font-size:0.5rem; color:#999;">Sem arte</span>';
-    
-    const draft = localStorage.getItem('go_plus_evento_draft');
-    if (draft) {
-        if (confirm("Deseja restaurar o rascunho anterior?")) {
-            const d = JSON.parse(draft);
-            document.getElementById('evento-titulo').value = d.titulo || '';
-            document.getElementById('evento-data').value = d.data_ini || '';
-            document.getElementById('evento-data-fim').value = d.data_fim || '';
-            document.getElementById('evento-local').value = d.local || '';
-            document.getElementById('evento-desc').value = d.desc || '';
-            document.getElementById('evento-link').value = d.link || '';
-            document.getElementById('evento-visibilidade').value = d.visib || 'Público';
-            if (d.foto) {
-                arteEventoBase64 = d.foto;
-                document.getElementById('evento-art-preview').innerHTML = `<img src="${d.foto}" style="width:100%; height:100%; object-fit:cover;">`;
-            }
-        }
-    }
+    document.getElementById('evento-draft-status').innerText = '';
     document.getElementById('modal-evento').style.display = 'flex';
 };
 
@@ -261,7 +345,11 @@ async function salvarEvento(e) {
             const { error } = await supabaseClient.from('eventos').insert([dados]);
             if (error) throw error;
             alert("Evento criado com sucesso!");
-            localStorage.removeItem('go_plus_evento_draft');
+            
+            // Limpa rascunho se foi salvo
+            let drafts = JSON.parse(localStorage.getItem('go_plus_eventos_drafts') || '[]');
+            drafts = drafts.filter(d => d.titulo !== dados.titulo);
+            localStorage.setItem('go_plus_eventos_drafts', JSON.stringify(drafts));
         }
         
         fecharModalEvento(); carregarMesesTabs();

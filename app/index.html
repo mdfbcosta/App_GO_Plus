@@ -437,8 +437,10 @@
             <!-- View Eventos -->
             <div id="view-eventos" class="app-view" style="display:none;">
                 <div class="flex justify-between items-center" style="margin-bottom: 20px;">
-                    <h2 style="color: var(--primary-blue);">Agenda de Eventos</h2>
-                    <button id="btn-novo-evento" class="btn btn-primary" onclick="abrirModalEvento()">+ Novo Evento</button>
+                    <div class="flex gap-2">
+                        <button id="btn-novo-evento" class="btn btn-primary" onclick="abrirModalEvento()">+ Novo Evento</button>
+                        <button class="btn btn-outline" style="font-size:0.8rem;" onclick="abrirModalRascunhos()">📁 Rascunhos</button>
+                    </div>
                 </div>
                 
                 <!-- Abas de Meses -->
@@ -1556,5 +1558,20 @@
             </div>
         </div>
         <div id="go-toast">Link copiado!</div>
+
+        <!-- Modal: Lista de Rascunhos -->
+        <div id="modal-rascunhos" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2500; justify-content:center; align-items:center; backdrop-filter: blur(2px);">
+            <div class="card" style="width: 90%; max-width: 450px; padding: 20px;">
+                <div class="flex justify-between items-center" style="margin-bottom: 20px;">
+                    <h3 style="color: var(--primary-blue); margin: 0;">Rascunhos de Eventos</h3>
+                    <button class="btn-close" onclick="document.getElementById('modal-rascunhos').style.display='none'">✕</button>
+                </div>
+                <div id="lista-rascunhos-items" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Carregados via JS -->
+                    <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">Nenhum rascunho salvo.</p>
+                </div>
+                <button class="btn btn-outline" style="width: 100%; margin-top: 15px;" onclick="document.getElementById('modal-rascunhos').style.display='none'">Fechar</button>
+            </div>
+        </div>
 </body>
 </html>
